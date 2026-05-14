@@ -1,0 +1,337 @@
+/* ——— Hero Mujer (dos columnas, fondo crema) ——— */
+.mujer-hero {
+  background: var(--color-cream-alt);
+  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.mujer-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .mujer-hero__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mujer-hero__copy h1 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 1.08;
+  color: var(--color-burgundy);
+  max-width: 14ch;
+}
+
+.mujer-hero__copy p {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+}
+
+.mujer-hero__visual {
+  border: 1px solid var(--color-line);
+  background: #e8e4e0;
+  min-height: min(420px, 55vh);
+}
+
+.mujer-hero__visual img {
+  width: 100%;
+  height: 100%;
+  min-height: min(420px, 55vh);
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* ——— Filtros ——— */
+.mujer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.25rem 0;
+  background: var(--color-cream-alt);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.mujer-toolbar__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.45);
+  flex-shrink: 0;
+}
+
+.mujer-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  flex: 1;
+}
+
+.mujer-filter {
+  padding: 0.55rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-ink);
+  border-radius: 0;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mujer-filter:hover {
+  border-color: rgba(128, 26, 21, 0.35);
+}
+
+.mujer-filter.is-active {
+  border-color: var(--color-burgundy);
+  color: var(--color-burgundy);
+  box-shadow: 0 0 0 1px var(--color-burgundy);
+}
+
+/* ——— Grid productos ——— */
+.mujer-products {
+  padding: clamp(2rem, 4vw, 3rem) 0;
+  background: var(--color-cream-alt);
+}
+
+.mujer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+@media (max-width: 900px) {
+  .mujer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .mujer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mujer-card {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.mujer-card__media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  background: #eceae6;
+}
+
+.mujer-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mujer-card__badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  background: #fff;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-line);
+}
+
+.mujer-card__body {
+  padding: 1.1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mujer-card__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #000;
+  line-height: 1.25;
+}
+
+.mujer-card__tags {
+  margin: 0 0 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.45);
+}
+
+.mujer-card__price {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-burgundy);
+}
+
+.mujer-card__cta {
+  width: 100%;
+  margin-top: auto;
+  justify-content: center;
+}
+
+.mujer-state,
+.mujer-empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
+.mujer-state--error {
+  color: var(--color-burgundy);
+}
+
+/* ——— Tres barras COMPRAR AHORA ——— */
+.mujer-triple-cta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0 0 clamp(2rem, 4vw, 3rem);
+  background: var(--color-cream-alt);
+}
+
+@media (max-width: 700px) {
+  .mujer-triple-cta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mujer-cta-bar {
+  width: 100%;
+  justify-content: center;
+  padding-block: 1rem;
+}
+
+/* ——— Próximamente / Personaliza ——— */
+.mujer-soon {
+  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5rem);
+  background: var(--color-cream);
+}
+
+.mujer-soon__card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+  border: 1px solid var(--color-line);
+  background: #ebe8e4;
+}
+
+@media (max-width: 800px) {
+  .mujer-soon__card {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mujer-soon__copy {
+  padding: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  background: #e8e5e0;
+}
+
+.mujer-soon__kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-burgundy);
+}
+
+.mujer-soon__copy h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  color: #000;
+  line-height: 1.1;
+}
+
+.mujer-soon__copy p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+  max-width: 42ch;
+}
+
+.mujer-soon__notify {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-burgundy);
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+.mujer-soon__notify:hover {
+  color: var(--color-burgundy-deep);
+}
+
+.mujer-soon__visual {
+  min-height: 280px;
+  border-left: 1px solid var(--color-line);
+}
+
+@media (max-width: 800px) {
+  .mujer-soon__visual {
+    border-left: 0;
+    border-top: 1px solid var(--color-line);
+    min-height: 220px;
+  }
+}
+
+.mujer-soon__visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  object-fit: cover;
+}
+
+@media (max-width: 800px) {
+  .mujer-soon__visual img {
+    min-height: 220px;
+  }
+}

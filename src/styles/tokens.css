@@ -1,0 +1,26 @@
+:root {
+  /* T3SO — referencia visual (capturas) */
+  --color-cream: #f9f8f4;
+  --color-cream-alt: #fdfcf8;
+  --color-burgundy: #801a15;
+  --color-burgundy-deep: #6d1511;
+  --color-teal-icon: #3d5a5c;
+  /* Compatibilidad con tokens previos usados en CSS */
+  --color-ruby: var(--color-burgundy);
+  --color-deep-teal: var(--color-teal-icon);
+  --color-teal: var(--color-teal-icon);
+  --color-mist: #e8e6e1;
+
+  --color-bg: var(--color-cream);
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-ink-muted: rgba(26, 26, 26, 0.68);
+  --color-line: rgba(26, 26, 26, 0.1);
+
+  --font-sans: 'Montserrat', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  --radius-ui: 0;
+  --header-h: 80px;
+  --container: 1200px;
+}
