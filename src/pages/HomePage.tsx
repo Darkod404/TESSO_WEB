@@ -1,27 +1,32 @@
 import { Link } from 'react-router-dom'
+import heroHomeImg from '../assets/HomePage1.png'
+import pillarImgDisenos from '../assets/HomePage2.png'
+import pillarImgPersonalizacion from '../assets/HomePage3.png'
+import pillarImgOrdenesEspeciales from '../assets/HomePage4.png'
+import pillarImgProduccionRapida from '../assets/HomePage5.png'
 import { useCatalogHome } from '../hooks/useCatalogHome'
 import { ProductCard } from '../components/product/ProductCard'
 
 const PILLARS = [
   {
     title: 'Diseños exclusivos de hombre y mujer',
-    body: 'Colecciones limitadas creadas por artistas urbanos independientes.',
-    img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+    body: 'Piezas auténticas para quienes buscan destacar.',
+    img: pillarImgDisenos,
   },
   {
     title: 'Personalización total',
     body: 'Sube tu diseño o usa nuestras herramientas para crear algo único.',
-    img: 'https://images.unsplash.com/photo-1585386959984-a41552231608?auto=format&fit=crop&w=800&q=80',
+    img: pillarImgPersonalizacion,
   },
   {
     title: 'Órdenes especiales',
     body: 'Soluciones para empresas, eventos y lanzamientos de marcas.',
-    img: 'https://images.unsplash.com/photo-1615486511484-92e48cc08101?auto=format&fit=crop&w=800&q=80',
+    img: pillarImgOrdenesEspeciales,
   },
   {
     title: 'Producción rápida',
     body: 'Entregas ágiles sin comprometer un milímetro de calidad.',
-    img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80',
+    img: pillarImgProduccionRapida,
   },
 ] as const
 
@@ -96,10 +101,7 @@ export function HomePage() {
           <div className="hero__divider" aria-hidden="true" />
 
           <div className="hero__visual">
-            <img
-              src="https://images.unsplash.com/photo-1529374255404-421a66b93c76?auto=format&fit=crop&w=1100&q=85"
-              alt="Modelo con camiseta negra y estampado"
-            />
+            <img src={heroHomeImg} alt="Modelo con camiseta negra y estampado" />
           </div>
         </div>
       </section>

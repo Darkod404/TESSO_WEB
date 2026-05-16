@@ -1,5 +1,5 @@
 .faq-page {
-  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(4rem, 8vw, 6rem);
+  padding: clamp(2.5rem, 5vw, 4rem) var(--page-gutter) clamp(4rem, 8vw, 6rem);
   background: var(--color-cream-alt);
 }
 
@@ -45,7 +45,7 @@
   text-align: left;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: clamp(0.92rem, 3.5vw, 1.05rem);
   color: #000;
 }
 

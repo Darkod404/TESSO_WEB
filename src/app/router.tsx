@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { MainLayout } from '../components/layout/MainLayout'
+import { CartPage } from '../pages/CartPage'
+import { CheckoutPage } from '../pages/CheckoutPage'
 import { FaqPage } from '../pages/FaqPage'
 import { HomePage } from '../pages/HomePage'
 import { HombrePage } from '../pages/HombrePage'
@@ -17,6 +19,8 @@ export const router = createBrowserRouter([
       { path: 'mujer', element: <MujerPage /> },
       { path: 'ordenes-especiales', element: <OrdenesEspecialesPage /> },
       { path: 'personaliza', element: <PersonalizaPage /> },
+      { path: 'carrito', element: <CartPage /> },
+      { path: 'checkout', element: <CheckoutPage /> },
       { path: 'preguntas-frecuentes', element: <FaqPage /> },
     ],
   },

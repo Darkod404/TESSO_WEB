@@ -31,9 +31,30 @@
   gap: 0.5rem 1rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .pz-steps {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .pz-steps {
+    grid-template-columns: 1fr;
+    gap: 0.35rem 0;
+  }
+
+  .pz-step {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+    text-align: left;
+    padding: 0.4rem 0;
+  }
+
+  .pz-step__num {
+    margin-bottom: 0;
+    min-width: 2.25rem;
   }
 }
 
@@ -92,7 +113,7 @@
 .pz-divider {
   height: 1px;
   background: var(--color-line);
-  max-width: min(var(--container), calc(100% - 48px));
+  max-width: min(var(--container), calc(100% - 2 * var(--page-gutter)));
   margin: 0 auto;
 }
 
@@ -112,6 +133,10 @@
 @media (max-width: 960px) {
   .pz-main__grid {
     grid-template-columns: 1fr;
+  }
+
+  .pz-preview {
+    position: static;
   }
 }
 

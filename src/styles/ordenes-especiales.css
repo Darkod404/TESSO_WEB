@@ -1,7 +1,7 @@
 /* ——— Hero ——— */
 .oe-hero {
   background: var(--color-cream-alt);
-  padding: clamp(2.5rem, 5vw, 4rem) 0;
+  padding: clamp(2.5rem, 5vw, 4rem) var(--page-gutter);
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -122,7 +122,7 @@
 
 /* ——— Cotización ——— */
 .oe-quote {
-  padding: clamp(3rem, 6vw, 5rem) 0;
+  padding: clamp(3rem, 6vw, 5rem) var(--page-gutter);
   background: var(--color-cream-alt);
 }
 
@@ -338,7 +338,7 @@
 
 /* ——— Casos de éxito ——— */
 .oe-cases {
-  padding: clamp(3rem, 6vw, 5rem) 0 clamp(4rem, 8vw, 6rem);
+  padding: clamp(3rem, 6vw, 5rem) var(--page-gutter) clamp(4rem, 8vw, 6rem);
   background: var(--color-cream);
   border-top: 1px solid var(--color-line);
 }

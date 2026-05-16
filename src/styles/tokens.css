@@ -24,6 +24,15 @@
   --font-h1: 'Bisteron PERSONAL USE', 'Roboto', system-ui, sans-serif;
 
   --radius-ui: 0;
+  /* Altura header; un poco más baja en móvil */
   --header-h: 80px;
   --container: 1200px;
+  /* Márgenes horizontales del layout (reemplaza el 48px fijo en pantallas estrechas) */
+  --page-gutter: clamp(0.75rem, 4.5vw, 1.5rem);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --header-h: 72px;
+  }
 }

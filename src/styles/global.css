@@ -8,6 +8,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 h1,
@@ -32,10 +33,17 @@ body {
   background: var(--color-bg);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 #root {
   min-height: 100svh;
+  min-width: 0;
+}
+
+main {
+  min-width: 0;
+  overflow-x: clip;
 }
 
 img {
@@ -54,7 +62,7 @@ button {
 }
 
 .container {
-  width: min(var(--container), calc(100% - 48px));
+  width: min(var(--container), calc(100% - 2 * var(--page-gutter)));
   margin-inline: auto;
 }
 
@@ -87,6 +95,14 @@ button {
     background 160ms ease,
     border-color 160ms ease,
     color 160ms ease;
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 0.88rem 1.15rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+  }
 }
 
 .btn-primary {

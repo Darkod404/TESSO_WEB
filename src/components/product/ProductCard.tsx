@@ -1,4 +1,5 @@
 import type { ProductDto } from '../../types/catalog'
+import { AddToCartButton } from '../cart/AddToCartButton'
 
 function formatMoney(value: number, currency: string) {
   try {
@@ -25,6 +26,9 @@ export function ProductCard({ product }: { product: ProductDto }) {
           <div className="price">{formatMoney(product.price, product.currency)}</div>
           <div className="muted">{product.categoryName}</div>
         </div>
+        <AddToCartButton product={product} className="btn btn-primary product-card__add">
+          Añadir al carrito
+        </AddToCartButton>
       </div>
     </article>
   )
