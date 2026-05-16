@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
+import { SiteBrand } from './SiteBrand'
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="container site-footer__inner">
-        <Link to="/" className="brand">
-          T3SO
-        </Link>
+        <SiteBrand />
 
         <ul className="footer-links">
           <li>

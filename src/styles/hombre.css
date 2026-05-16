@@ -41,7 +41,7 @@
 .hombre-hero h1 {
   margin: 0 0 0.65rem;
   max-width: 14ch;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(2.25rem, 4.5vw, 3.5rem);
   line-height: 1.05;
@@ -248,7 +248,7 @@
 
 .hombre-newsletter h2 {
   margin: 0 0 0.75rem;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(1.75rem, 3vw, 2.35rem);
   color: var(--color-burgundy);

@@ -10,6 +10,18 @@ html {
   scroll-behavior: smooth;
 }
 
+h1,
+h2 {
+  font-family: var(--font-h1);
+}
+
+h1.display-title,
+h1.section-title,
+h2.section-title,
+h2.display-title {
+  font-family: var(--font-h1);
+}
+
 body {
   margin: 0;
   min-height: 100svh;
@@ -47,7 +59,7 @@ button {
 }
 
 .display-title {
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.08;
@@ -103,7 +115,7 @@ button {
 }
 
 .section-title {
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-size: clamp(1.85rem, 3.2vw, 2.5rem);
   margin: 0 0 0.5rem;
   color: var(--color-ink);

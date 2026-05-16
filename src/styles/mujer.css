@@ -20,7 +20,7 @@
 
 .mujer-hero__copy h1 {
   margin: 0 0 1rem;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(2rem, 4vw, 3.1rem);
   line-height: 1.08;
@@ -274,7 +274,7 @@
 
 .mujer-soon__copy h2 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(1.75rem, 3vw, 2.5rem);
   color: #000;

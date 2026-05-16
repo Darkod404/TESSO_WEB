@@ -11,7 +11,7 @@
 
 .faq-page__head h1 {
   margin: 0 0 0.75rem;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(2rem, 3.5vw, 2.75rem);
   color: #000;

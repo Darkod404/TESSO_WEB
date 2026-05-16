@@ -17,8 +17,11 @@
   --color-ink-muted: rgba(26, 26, 26, 0.68);
   --color-line: rgba(26, 26, 26, 0.1);
 
-  --font-sans: 'Montserrat', system-ui, sans-serif;
-  --font-display: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Roboto', system-ui, sans-serif;
+  /* Resto del UI (marca pequeña, h3+, cards, footer, etc.) */
+  --font-display: 'Roboto', system-ui, sans-serif;
+  /* h1 y h2; Bisteron vía index.html */
+  --font-h1: 'Bisteron PERSONAL USE', 'Roboto', system-ui, sans-serif;
 
   --radius-ui: 0;
   --header-h: 80px;

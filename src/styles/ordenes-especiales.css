@@ -48,7 +48,7 @@
 
 .oe-hero__copy h1 {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(1.85rem, 3.2vw, 2.65rem);
   line-height: 1.12;
@@ -141,7 +141,7 @@
 
 .oe-quote__intro h2 {
   margin: 0 0 1rem;
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(1.85rem, 3vw, 2.5rem);
   color: #000;
@@ -345,7 +345,7 @@
 
 .oe-cases h2 {
   margin: 0 0 clamp(2rem, 4vw, 3rem);
-  font-family: var(--font-display);
+  font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(1.85rem, 3vw, 2.5rem);
   text-align: center;

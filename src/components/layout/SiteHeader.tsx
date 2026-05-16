@@ -1,20 +1,18 @@
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
+import { SiteBrand } from './SiteBrand'
 
 const NAV = [
   { to: '/hombre', label: 'Hombre' },
   { to: '/mujer', label: 'Mujer' },
   { to: '/ordenes-especiales', label: 'Órdenes especiales' },
   { to: '/personaliza', label: 'Personaliza' },
-  { to: '/contacto', label: 'Contacto' },
 ] as const
 
 export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <Link to="/" className="brand" aria-label="Inicio T3SO">
-          T3SO
-        </Link>
+        <SiteBrand />
 
         <nav className="nav" aria-label="Principal">
           {NAV.map((item) => (
@@ -52,9 +50,6 @@ export function SiteHeader() {
               </svg>
             </button>
           </div>
-          <Link to="/personaliza" className="btn btn-primary header-cta">
-            Diseña la tuya
-          </Link>
         </div>
       </div>
     </header>
