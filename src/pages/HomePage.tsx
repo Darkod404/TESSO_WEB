@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import heroHomeImg from '../assets/HomePage1.png'
 import pillarImgDisenos from '../assets/HomePage2.png'
@@ -74,8 +75,28 @@ function IconFlexible() {
   )
 }
 
+const FAQS = [
+  {
+    q: '¿Cuál es el tiempo de entrega?',
+    a: 'Para diseños de colección, entregamos en 2-3 días hábiles en la ciudad de Bogotá. Para pedidos personalizados, el tiempo oscila entre 7 y 10 días dependiendo de la complejidad, ciudad y volumen.',
+  },
+  {
+    q: '¿Tienen pedido mínimo para personalizados?',
+    a: 'No. Creemos en la identidad individual. Puedes pedir desde una sola camiseta personalizada con la misma calidad que un pedido masivo.',
+  },
+  {
+    q: '¿Qué tipo de telas utilizan?',
+    a: 'Utilizamos tela peruana premium, algodón perchado 100% premium de 250 gr para nuestras líneas de colección. Para pedidos masivos usamos algodón perchado entre 150 y 180 gr (depende de cada personalización), garantizando durabilidad y confort superior.',
+  },
+  {
+    q: '¿Hacen envíos internacionales?',
+    a: 'Actualmente realizamos envíos a todo el territorio nacional. Estamos trabajando para habilitar envíos internacionales próximamente.',
+  },
+] as const
+
 export function HomePage() {
   const state = useCatalogHome()
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
     <>
@@ -146,8 +167,7 @@ export function HomePage() {
             <div className="identity__intro">
               <div className="identity__accent-bar" aria-hidden="true" />
               <p>
-                Creamos piezas que conectan con tu identidad, tu equipo o tu marca. Cada puntada está
-                pensada para durar.
+                Creamos piezas que conectan con tu identidad, tu equipo o tu marca. Cada camiseta está pensada para durar.
               </p>
             </div>
 
@@ -156,7 +176,7 @@ export function HomePage() {
                 <IconQuality />
                 <div>
                   <h4>Calidad real</h4>
-                  <p>Premium Peruvian cloth de alto gramaje para una caída perfecta.</p>
+                  <p>Tela peruana premium, algodón perchado de alto gramaje para una caída perfecta.</p>
                 </div>
               </div>
               <div className="feature-item">
@@ -170,7 +190,7 @@ export function HomePage() {
                 <IconExclusive />
                 <div>
                   <h4>Diseños exclusivos</h4>
-                  <p>Patrones y cortes desarrollados internamente.</p>
+                  <p>Patrones y estampados creados internamente con identidad única.</p>
                 </div>
               </div>
               <div className="feature-item">
@@ -246,6 +266,61 @@ export function HomePage() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="section faq-section" id="faq" aria-labelledby="faq-heading">
+        <div className="container faq">
+          <header className="faq__header">
+            <h2 id="faq-heading" className="section-title">
+              Preguntas frecuentes
+            </h2>
+            <p className="section-sub">Todo lo que necesitas saber sobre T3SO.</p>
+          </header>
+
+          <ul className="faq__list">
+            {FAQS.map((item, index) => {
+              const isOpen = openFaq === index
+              const panelId = `faq-panel-${index}`
+              const buttonId = `faq-button-${index}`
+              return (
+                <li key={item.q} className={`faq__item${isOpen ? ' is-open' : ''}`}>
+                  <h3 className="faq__heading">
+                    <button
+                      type="button"
+                      id={buttonId}
+                      className="faq__summary"
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      onClick={() => setOpenFaq((current) => (current === index ? null : index))}
+                    >
+                      <span className="faq__question">{item.q}</span>
+                      <span className="faq__icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M6 9l6 6 6-6"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                  </h3>
+                  <div
+                    id={panelId}
+                    role="region"
+                    aria-labelledby={buttonId}
+                    className="faq__answer"
+                    hidden={!isOpen}
+                  >
+                    <p>{item.a}</p>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       </section>
 

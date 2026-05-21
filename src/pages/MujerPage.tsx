@@ -1,55 +1,85 @@
 import '../styles/mujer.css'
 import { useMemo, useState } from 'react'
 import { MujerProductCard } from '../components/mujer/MujerProductCard'
+import { FilterDropdown } from '../components/filters/FilterDropdown'
 import { useMujerCatalog } from '../hooks/useMujerCatalog'
 
-const FILTER_OPTIONS = [
-  { key: 'OVERSIZED', label: 'Oversized' },
-  { key: 'CROP', label: 'Crop' },
-  { key: 'BASICA', label: 'Básica' },
-  { key: 'MINIMAL', label: 'Minimal' },
-  { key: 'URBAN', label: 'Urban' },
-  { key: 'VINTAGE', label: 'Vintage' },
-] as const
+const STYLES = ['Oversize', 'Boxy fit', 'Regular fit', 'Crop'] as const
+const THEMES = ['Anime', 'POP', 'Streetwear', 'Minimalista'] as const
+const SIZES = ['S', 'M', 'L', 'XL'] as const
 
-const TAG_POOL = ['OVERSIZED', 'CROP', 'BASICA', 'MINIMAL', 'URBAN', 'VINTAGE'] as const
+type StyleOpt = (typeof STYLES)[number]
+type ThemeOpt = (typeof THEMES)[number]
+type SizeOpt = (typeof SIZES)[number]
 
-function hashId(id: string) {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h += id.charCodeAt(i)
-  return h
+type ProductTags = {
+  style: StyleOpt
+  theme: ThemeOpt
+  sizes: readonly SizeOpt[]
 }
 
-function tagPairFromId(id: string): readonly [(typeof TAG_POOL)[number], (typeof TAG_POOL)[number]] {
-  const h = hashId(id)
-  return [TAG_POOL[h % TAG_POOL.length], TAG_POOL[(h + 2) % TAG_POOL.length]]
+function hashCode(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+function tagsFromId(id: string): ProductTags {
+  const h = hashCode(id)
+  const style = STYLES[h % STYLES.length]
+  const theme = THEMES[(h >> 3) % THEMES.length]
+  const sizeMask = (h >> 5) & 0b1111
+  const sizes = SIZES.filter((_, idx) => sizeMask & (1 << idx))
+  return { style, theme, sizes: sizes.length ? sizes : (SIZES as readonly SizeOpt[]) }
 }
 
 function tagLine(id: string) {
-  const [a, b] = tagPairFromId(id)
-  return `${a} / ${b}`
+  const t = tagsFromId(id)
+  return `${t.style} · ${t.theme}`
 }
 
-function matchesFilter(id: string, filterKey: (typeof FILTER_OPTIONS)[number]['key']) {
-  const [a, b] = tagPairFromId(id)
-  return a === filterKey || b === filterKey
+type SortKey = 'novedades' | 'precio-asc' | 'precio-desc' | 'nombre'
+
+function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
+  const next = new Set(set)
+  if (next.has(value)) next.delete(value)
+  else next.add(value)
+  return next
 }
 
 const HERO_IMG =
   'https://images.unsplash.com/photo-1539109136881-3be0616acf5b?auto=format&fit=crop&w=1200&q=85'
 
-const FABRIC_IMG =
-  'https://images.unsplash.com/photo-1558171813-4c088753af8f?auto=format&fit=crop&w=1200&q=85'
-
 export function MujerPage() {
   const state = useMujerCatalog()
-  const [activeKey, setActiveKey] = useState<(typeof FILTER_OPTIONS)[number]['key']>('OVERSIZED')
+  const [stylesSel, setStylesSel] = useState<ReadonlySet<StyleOpt>>(new Set())
+  const [themesSel, setThemesSel] = useState<ReadonlySet<ThemeOpt>>(new Set())
+  const [sizesSel, setSizesSel] = useState<ReadonlySet<SizeOpt>>(new Set())
+  const [sortKey, setSortKey] = useState<SortKey>('novedades')
+
+  const activeCount = stylesSel.size + themesSel.size + sizesSel.size
+
+  const clearAll = () => {
+    setStylesSel(new Set())
+    setThemesSel(new Set())
+    setSizesSel(new Set())
+  }
 
   const rows = useMemo(() => {
     if (state.status !== 'ok') return []
-    const list = state.products.map((p) => ({ p }))
-    return list.filter(({ p }) => matchesFilter(p.id, activeKey))
-  }, [state, activeKey])
+    const filtered = state.products.filter((p) => {
+      const t = tagsFromId(p.id)
+      if (stylesSel.size > 0 && !stylesSel.has(t.style)) return false
+      if (themesSel.size > 0 && !themesSel.has(t.theme)) return false
+      if (sizesSel.size > 0 && !t.sizes.some((s) => sizesSel.has(s))) return false
+      return true
+    })
+    const sorted = [...filtered]
+    if (sortKey === 'precio-asc') sorted.sort((a, b) => a.price - b.price)
+    else if (sortKey === 'precio-desc') sorted.sort((a, b) => b.price - a.price)
+    else if (sortKey === 'nombre') sorted.sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    return sorted
+  }, [state, stylesSel, themesSel, sizesSel, sortKey])
 
   return (
     <>
@@ -69,19 +99,51 @@ export function MujerPage() {
       </section>
 
       <div className="container mujer-toolbar">
-        <span className="mujer-toolbar__label">Filtrar por:</span>
-        <div className="mujer-filters" role="group" aria-label="Filtros">
-          {FILTER_OPTIONS.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              className={`mujer-filter${activeKey === key ? ' is-active' : ''}`}
-              aria-pressed={activeKey === key}
-              onClick={() => setActiveKey(key)}
-            >
-              {label}
+        <div className="mujer-filters-bar">
+          <FilterDropdown
+            label="Estilo"
+            options={STYLES}
+            selected={stylesSel}
+            onToggle={(v) => setStylesSel((prev) => toggle(prev, v))}
+            onClear={() => setStylesSel(new Set())}
+          />
+          <FilterDropdown
+            label="Tema"
+            options={THEMES}
+            selected={themesSel}
+            onToggle={(v) => setThemesSel((prev) => toggle(prev, v))}
+            onClear={() => setThemesSel(new Set())}
+          />
+          <FilterDropdown
+            label="Talla"
+            options={SIZES}
+            selected={sizesSel}
+            onToggle={(v) => setSizesSel((prev) => toggle(prev, v))}
+            onClear={() => setSizesSel(new Set())}
+            variant="compact"
+          />
+        </div>
+
+        <div className="mujer-toolbar__actions">
+          {activeCount > 0 ? (
+            <button type="button" className="mujer-clear" onClick={clearAll}>
+              Limpiar filtros
+              <span className="mujer-clear__count" aria-hidden="true">
+                {activeCount}
+              </span>
+              <span className="sr-only">{activeCount} filtros activos</span>
             </button>
-          ))}
+          ) : null}
+
+          <label className="mujer-sort">
+            <span>Ordenar por</span>
+            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)}>
+              <option value="novedades">Novedades</option>
+              <option value="precio-asc">Precio · menor a mayor</option>
+              <option value="precio-desc">Precio · mayor a menor</option>
+              <option value="nombre">Nombre A–Z</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -99,12 +161,14 @@ export function MujerPage() {
             </p>
           ) : rows.length === 0 ? (
             <p className="mujer-empty">
-              No hay piezas para <strong>{FILTER_OPTIONS.find((f) => f.key === activeKey)?.label}</strong>.
-              Prueba otro filtro.
+              No hay piezas que coincidan con los filtros seleccionados.{' '}
+              <button type="button" className="mujer-empty__reset" onClick={clearAll}>
+                Limpiar filtros
+              </button>
             </p>
           ) : (
             <div className="mujer-grid">
-              {rows.map(({ p }) => (
+              {rows.map((p) => (
                 <MujerProductCard
                   key={p.id}
                   product={p}
@@ -117,38 +181,6 @@ export function MujerPage() {
         </div>
       </section>
 
-      <div className="container mujer-triple-cta">
-        <a className="btn btn-primary mujer-cta-bar" href="#identidad">
-          Comprar ahora
-        </a>
-        <a className="btn btn-primary mujer-cta-bar" href="#identidad">
-          Comprar ahora
-        </a>
-        <a className="btn btn-primary mujer-cta-bar" href="#identidad">
-          Comprar ahora
-        </a>
-      </div>
-
-      <section className="mujer-soon" id="identidad" aria-labelledby="mujer-soon-title">
-        <div className="container">
-          <div className="mujer-soon__card">
-            <div className="mujer-soon__copy">
-              <p className="mujer-soon__kicker">Próximamente</p>
-              <h2 id="mujer-soon-title">Personaliza tu visión.</h2>
-              <p>
-                Crea una pieza única que hable por ti. Nuestra herramienta de personalización estará
-                disponible pronto para la colección Mujer.
-              </p>
-              <button type="button" className="mujer-soon__notify">
-                Notificarme
-              </button>
-            </div>
-            <div className="mujer-soon__visual">
-              <img src={FABRIC_IMG} alt="" />
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   )
 }

@@ -1,24 +1,41 @@
 import '../styles/hombre.css'
 import { useMemo, useState } from 'react'
 import { HombreProductCard } from '../components/hombre/HombreProductCard'
+import { FilterDropdown } from '../components/filters/FilterDropdown'
 import { useHombreCatalog } from '../hooks/useHombreCatalog'
 
-const FILTERS = ['OVERSIZED', 'BÁSICA', 'NEGRA', 'BLANCA', 'GRAPHIC', 'MINIMAL'] as const
+const STYLES = ['Oversize', 'Boxy fit', 'Regular fit'] as const
+const THEMES = ['Anime', 'POP', 'Streetwear', 'Minimalista'] as const
+const SIZES = ['S', 'M', 'L', 'XL'] as const
 
-function tagPairFromId(id: string): readonly [(typeof FILTERS)[number], (typeof FILTERS)[number]] {
+type StyleOpt = (typeof STYLES)[number]
+type ThemeOpt = (typeof THEMES)[number]
+type SizeOpt = (typeof SIZES)[number]
+
+type ProductTags = {
+  style: StyleOpt
+  theme: ThemeOpt
+  sizes: readonly SizeOpt[]
+}
+
+function hashCode(id: string): number {
   let h = 0
-  for (let i = 0; i < id.length; i++) h += id.charCodeAt(i)
-  return [FILTERS[h % FILTERS.length], FILTERS[(h + 2) % FILTERS.length]]
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+function tagsFromId(id: string): ProductTags {
+  const h = hashCode(id)
+  const style = STYLES[h % STYLES.length]
+  const theme = THEMES[(h >> 3) % THEMES.length]
+  const sizeMask = (h >> 5) & 0b1111
+  const sizes = SIZES.filter((_, idx) => sizeMask & (1 << idx))
+  return { style, theme, sizes: sizes.length ? sizes : (SIZES as readonly SizeOpt[]) }
 }
 
 function tagLine(id: string) {
-  const [a, b] = tagPairFromId(id)
-  return `${a} / ${b}`
-}
-
-function matchesFilter(id: string, filter: (typeof FILTERS)[number]) {
-  const [a, b] = tagPairFromId(id)
-  return a === filter || b === filter
+  const t = tagsFromId(id)
+  return `${t.style} · ${t.theme}`
 }
 
 type SortKey = 'novedades' | 'precio-asc' | 'precio-desc' | 'nombre'
@@ -26,21 +43,43 @@ type SortKey = 'novedades' | 'precio-asc' | 'precio-desc' | 'nombre'
 const HERO_IMG =
   'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1800&q=85'
 
+function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
+  const next = new Set(set)
+  if (next.has(value)) next.delete(value)
+  else next.add(value)
+  return next
+}
+
 export function HombrePage() {
   const state = useHombreCatalog()
-  const [activeFilter, setActiveFilter] = useState<(typeof FILTERS)[number]>('OVERSIZED')
+  const [stylesSel, setStylesSel] = useState<ReadonlySet<StyleOpt>>(new Set())
+  const [themesSel, setThemesSel] = useState<ReadonlySet<ThemeOpt>>(new Set())
+  const [sizesSel, setSizesSel] = useState<ReadonlySet<SizeOpt>>(new Set())
   const [sortKey, setSortKey] = useState<SortKey>('novedades')
+
+  const activeCount = stylesSel.size + themesSel.size + sizesSel.size
+
+  const clearAll = () => {
+    setStylesSel(new Set())
+    setThemesSel(new Set())
+    setSizesSel(new Set())
+  }
 
   const rows = useMemo(() => {
     if (state.status !== 'ok') return []
-    const list = state.products.map((p) => ({ p }))
-    const filtered = list.filter(({ p }) => matchesFilter(p.id, activeFilter))
+    const filtered = state.products.filter((p) => {
+      const t = tagsFromId(p.id)
+      if (stylesSel.size > 0 && !stylesSel.has(t.style)) return false
+      if (themesSel.size > 0 && !themesSel.has(t.theme)) return false
+      if (sizesSel.size > 0 && !t.sizes.some((s) => sizesSel.has(s))) return false
+      return true
+    })
     const sorted = [...filtered]
-    if (sortKey === 'precio-asc') sorted.sort((a, b) => a.p.price - b.p.price)
-    else if (sortKey === 'precio-desc') sorted.sort((a, b) => b.p.price - a.p.price)
-    else if (sortKey === 'nombre') sorted.sort((a, b) => a.p.name.localeCompare(b.p.name, 'es'))
+    if (sortKey === 'precio-asc') sorted.sort((a, b) => a.price - b.price)
+    else if (sortKey === 'precio-desc') sorted.sort((a, b) => b.price - a.price)
+    else if (sortKey === 'nombre') sorted.sort((a, b) => a.name.localeCompare(b.name, 'es'))
     return sorted
-  }, [state, activeFilter, sortKey])
+  }, [state, stylesSel, themesSel, sizesSel, sortKey])
 
   return (
     <>
@@ -56,21 +95,44 @@ export function HombrePage() {
       </section>
 
       <div className="container hombre-toolbar">
-        <div className="hombre-filters" role="group" aria-label="Filtros de categoría">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                className={`hombre-filter${activeFilter === f ? ' is-active' : ''}`}
-                aria-pressed={activeFilter === f}
-                onClick={() => setActiveFilter(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+        <div className="hombre-filters-bar">
+          <FilterDropdown
+            label="Estilo"
+            options={STYLES}
+            selected={stylesSel}
+            onToggle={(v) => setStylesSel((prev) => toggle(prev, v))}
+            onClear={() => setStylesSel(new Set())}
+          />
+          <FilterDropdown
+            label="Tema"
+            options={THEMES}
+            selected={themesSel}
+            onToggle={(v) => setThemesSel((prev) => toggle(prev, v))}
+            onClear={() => setThemesSel(new Set())}
+          />
+          <FilterDropdown
+            label="Talla"
+            options={SIZES}
+            selected={sizesSel}
+            onToggle={(v) => setSizesSel((prev) => toggle(prev, v))}
+            onClear={() => setSizesSel(new Set())}
+            variant="compact"
+          />
+        </div>
+
+        <div className="hombre-toolbar__actions">
+          {activeCount > 0 ? (
+            <button type="button" className="hombre-clear" onClick={clearAll}>
+              Limpiar filtros
+              <span className="hombre-clear__count" aria-hidden="true">
+                {activeCount}
+              </span>
+              <span className="sr-only">{activeCount} filtros activos</span>
+            </button>
+          ) : null}
+
           <label className="hombre-sort">
-            <span>Ordenar por:</span>
+            <span>Ordenar por</span>
             <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)}>
               <option value="novedades">Novedades</option>
               <option value="precio-asc">Precio · menor a mayor</option>
@@ -78,6 +140,7 @@ export function HombrePage() {
               <option value="nombre">Nombre A–Z</option>
             </select>
           </label>
+        </div>
       </div>
 
       <section className="hombre-products" aria-label="Catálogo hombre">
@@ -95,11 +158,14 @@ export function HombrePage() {
             </p>
           ) : rows.length === 0 ? (
             <p className="hombre-empty">
-              No hay piezas con la etiqueta <strong>{activeFilter}</strong>. Prueba otro filtro.
+              No hay piezas que coincidan con los filtros seleccionados.{' '}
+              <button type="button" className="hombre-empty__reset" onClick={clearAll}>
+                Limpiar filtros
+              </button>
             </p>
           ) : (
             <div className="hombre-grid">
-              {rows.map(({ p }) => (
+              {rows.map((p) => (
                 <HombreProductCard key={p.id} product={p} tagLine={tagLine(p.id)} />
               ))}
             </div>
