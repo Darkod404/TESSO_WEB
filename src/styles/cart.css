@@ -268,3 +268,334 @@
   text-decoration: none;
   box-sizing: border-box;
 }
+
+.cart-checkout-btn.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ——— Pasos ——— */
+.cart-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 1.75rem;
+  flex-wrap: wrap;
+}
+
+.cart-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-ink-muted);
+}
+
+.cart-step:not(:last-child)::after {
+  content: '';
+  width: clamp(1.5rem, 6vw, 4rem);
+  height: 1px;
+  background: var(--color-line);
+  margin-left: 0.65rem;
+}
+
+.cart-step__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: var(--color-surface);
+}
+
+.cart-step__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cart-step.is-active {
+  color: var(--color-burgundy);
+}
+
+.cart-step.is-active .cart-step__dot {
+  border-color: var(--color-burgundy);
+  background: var(--color-burgundy);
+  color: #fff;
+}
+
+/* ——— Main ——— */
+.cart-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.cart-panel__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.4rem;
+  margin-left: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-burgundy);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* ——— Cantidad ——— */
+.cart-qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-line);
+}
+
+.cart-qty__btn {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  background: var(--color-surface);
+  color: var(--color-burgundy);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.cart-qty__btn:hover {
+  background: #faf6f5;
+}
+
+.cart-qty__input {
+  width: 2.75rem;
+  height: 2rem;
+  text-align: center;
+  border: 0;
+  border-left: 1px solid var(--color-line);
+  border-right: 1px solid var(--color-line);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  -moz-appearance: textfield;
+}
+
+.cart-qty__input::-webkit-outer-spin-button,
+.cart-qty__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ——— Entrega ——— */
+.cart-delivery {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: clamp(1.1rem, 2.5vw, 1.6rem);
+}
+
+.cart-delivery__title {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-h1);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-ink);
+}
+
+.cart-delivery__lead {
+  margin: 0 0 1.1rem;
+  font-size: 0.88rem;
+  color: var(--color-ink-muted);
+}
+
+.cart-delivery__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .cart-delivery__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cart-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cart-field--wide {
+  grid-column: 1 / -1;
+}
+
+.cart-field__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.cart-field__control {
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  border-radius: 0;
+}
+
+.cart-field__control:focus {
+  outline: 2px solid var(--color-burgundy);
+  outline-offset: -1px;
+}
+
+.cart-delivery__status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.85rem 0 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-burgundy);
+}
+
+.cart-delivery__spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(128, 26, 21, 0.25);
+  border-top-color: var(--color-burgundy);
+  border-radius: 50%;
+  animation: cart-spin 0.7s linear infinite;
+}
+
+@keyframes cart-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cart-delivery__warn {
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.85rem;
+  background: #fff6e6;
+  border: 1px solid #f0d28a;
+  font-size: 0.82rem;
+  color: #7a5a12;
+}
+
+.cart-delivery__note {
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 0.85rem;
+  background: #eef4ff;
+  border: 1px solid #c9d9f5;
+  font-size: 0.82rem;
+  color: #2f4f86;
+}
+
+/* Constructor de dirección (nomenclatura colombiana) */
+.addr-builder__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.addr-builder .cart-field {
+  margin: 0;
+}
+
+.addr-builder__via {
+  flex: 1 1 150px;
+  min-width: 130px;
+}
+
+.addr-builder__sm {
+  flex: 0 0 auto;
+  width: 78px;
+}
+
+.addr-builder__sm .cart-field__control {
+  text-align: center;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+
+.addr-builder__hash,
+.addr-builder__dash {
+  align-self: center;
+  padding-bottom: 0.55rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-burgundy);
+}
+
+.addr-builder__preview {
+  margin: 0.7rem 0 0;
+  padding: 0.55rem 0.75rem;
+  background: #faf6f5;
+  border: 1px dashed #d9c2bf;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #2a2a2a;
+}
+
+.addr-builder__preview-label {
+  font-weight: 600;
+  color: var(--color-burgundy);
+}
+
+.addr-builder__preview-muted {
+  color: #8a8a8a;
+}
+
+@media (max-width: 540px) {
+  .addr-builder__sm {
+    width: calc(33.333% - 0.4rem);
+  }
+  .addr-builder__via {
+    flex-basis: 100%;
+  }
+}
+
+/* ——— Mapa ——— */
+.cart-map {
+  margin-top: 1rem;
+}
+
+.cart-map__canvas {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--color-line);
+  z-index: 0;
+}
+
+.cart-map__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-ink-muted);
+}
+
+.cart-invoice__muted {
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.cart-invoice__row--eta {
+  font-size: 0.82rem;
+}
+
+.cart-invoice__row--eta dt,
+.cart-invoice__row--eta dd {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}

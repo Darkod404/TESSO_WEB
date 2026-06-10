@@ -1,9 +1,9 @@
 /* ——— Hero + pasos ——— */
 .pz-hero {
-  background: var(--color-cream-alt);
+  background: var(--color-burgundy);
   padding: clamp(2.25rem, 4vw, 3.5rem) 0 0;
   text-align: center;
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-burgundy-deep);
 }
 
 .pz-hero h1 {
@@ -11,14 +11,14 @@
   font-family: var(--font-h1);
   font-weight: 700;
   font-size: clamp(2rem, 4vw, 3rem);
-  color: #000;
+  color: #fff;
 }
 
 .pz-hero__lead {
   margin: 0 auto 2rem;
   max-width: 42ch;
   font-size: 1rem;
-  color: var(--color-ink-muted);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .pz-steps {
@@ -65,16 +65,16 @@
   cursor: pointer;
   text-align: center;
   font-family: var(--font-sans);
-  color: rgba(26, 26, 26, 0.45);
+  color: rgba(255, 255, 255, 0.6);
   transition: color 0.15s ease;
 }
 
 .pz-step:hover {
-  color: var(--color-burgundy);
+  color: #fff;
 }
 
 .pz-step.is-active {
-  color: #000;
+  color: #fff;
   font-weight: 700;
 }
 
@@ -87,7 +87,7 @@
 }
 
 .pz-step__num span {
-  color: var(--color-burgundy);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .pz-step__label {
@@ -103,16 +103,16 @@
   letter-spacing: 0.04em;
   text-transform: none;
   margin-top: 0.2rem;
-  color: rgba(26, 26, 26, 0.55);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .pz-step.is-active .pz-step__desc {
-  color: var(--color-ink);
+  color: #fff;
 }
 
 .pz-divider {
   height: 1px;
-  background: var(--color-line);
+  background: rgba(255, 255, 255, 0.2);
   max-width: min(var(--container), calc(100% - 2 * var(--page-gutter)));
   margin: 0 auto;
 }
@@ -152,52 +152,40 @@
   border: 1px solid var(--color-line);
   aspect-ratio: 4 / 5;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   overflow: hidden;
 }
 
-.pz-preview__frame img {
-  max-width: 78%;
-  max-height: 88%;
-  object-fit: contain;
-  transition: transform 0.25s ease;
+.pz-preview__canvas {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 100%;
+  width: 100%;
 }
 
-.pz-preview__frame img.is-back {
-  transform: scaleX(-1);
+.pz-preview__canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
 }
 
-.pz-design-area.is-light {
-  border-color: rgba(26, 26, 26, 0.28);
-  color: rgba(26, 26, 26, 0.5);
-  text-shadow: none;
-}
-
-.pz-view-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.pz-view-toggle button {
-  padding: 0.75rem 1rem;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+.pz-preview__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  border-radius: 0;
+  color: rgba(26, 26, 26, 0.55);
+  background: rgba(255, 255, 255, 0.82);
   border: 1px solid var(--color-line);
-  background: #fff;
-  color: var(--color-burgundy);
-  cursor: pointer;
-}
-
-.pz-view-toggle button.is-active {
-  background: var(--color-burgundy);
-  color: #fff;
-  border-color: var(--color-burgundy);
+  pointer-events: none;
 }
 
 /* Panel derecho */
@@ -221,6 +209,9 @@
 }
 
 .pz-block__title span {
+  /* Bisteron no tiene glifos numéricos */
+  font-family: var(--font-sans);
+  font-variant-numeric: lining-nums;
   color: var(--color-burgundy);
 }
 
@@ -358,6 +349,157 @@
 }
 
 /* Upload */
+.pz-zones {
+  margin-bottom: 1.25rem;
+}
+
+/* Menú desplegable de ubicaciones */
+.pz-zones__menu {
+  position: relative;
+}
+
+.pz-zones__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  cursor: pointer;
+  border-radius: 0;
+  font-family: var(--font-sans);
+}
+
+.pz-zones__menu.is-open .pz-zones__trigger,
+.pz-zones__trigger:hover {
+  border-color: var(--color-burgundy);
+}
+
+.pz-zones__trigger-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.pz-zones__trigger-icon {
+  display: inline-flex;
+  color: var(--color-burgundy);
+  transition: transform 0.2s ease;
+}
+
+.pz-zones__menu.is-open .pz-zones__trigger-icon {
+  transform: rotate(180deg);
+}
+
+.pz-zones__panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0.5rem;
+  background: #fff;
+  border: 1px solid var(--color-burgundy);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
+}
+
+.pz-zones__menu.is-open .pz-zones__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.pz-zones__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+@media (max-width: 520px) {
+  .pz-zones__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pz-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  border-radius: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.pz-zone:hover {
+  border-color: rgba(128, 26, 21, 0.45);
+  background: #faf6f5;
+}
+
+/* Zona seleccionada (activa): solo borde, sin relleno */
+.pz-zone.is-active {
+  border-color: var(--color-burgundy);
+  border-width: 2px;
+  background: #fff;
+}
+
+/* Zona con diseño cargado: fondo rojito */
+.pz-zone.has-design {
+  border-color: var(--color-burgundy);
+  background: #f6dedb;
+}
+
+.pz-zone.has-design.is-active {
+  border-width: 2px;
+  background: #f1cfca;
+}
+
+.pz-zone__name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  line-height: 1.25;
+}
+
+.pz-zone__hint {
+  font-size: 0.66rem;
+  color: var(--color-ink-muted);
+  line-height: 1.35;
+}
+
+.pz-zone__dot {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-burgundy);
+  color: #fff;
+}
+
+.pz-zone.is-active .pz-zone__dot {
+  background: #fff;
+  color: var(--color-burgundy);
+}
+
 .pz-upload-label {
   margin: 0 0 0.5rem;
   font-size: 0.68rem;
@@ -380,6 +522,102 @@
 .pz-drop:hover,
 .pz-drop:focus-within {
   border-color: rgba(128, 26, 21, 0.45);
+}
+
+.pz-drop.has-design {
+  border-style: solid;
+  border-color: var(--color-burgundy);
+  background: #faf6f5;
+}
+
+.pz-rotate {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+}
+
+.pz-rotate__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+
+.pz-rotate__value {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-burgundy);
+}
+
+.pz-rotate__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pz-rotate__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-burgundy);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.pz-rotate__btn:hover {
+  border-color: var(--color-burgundy);
+  background: #faf6f5;
+}
+
+.pz-rotate__slider {
+  flex: 1 1 auto;
+  accent-color: var(--color-burgundy);
+  cursor: pointer;
+}
+
+.pz-design-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.pz-design-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-burgundy);
+  cursor: pointer;
+  border-radius: 0;
+  text-align: center;
+}
+
+.pz-design-action:hover {
+  border-color: var(--color-burgundy);
+}
+
+.pz-design-action--remove {
+  color: #fff;
+  background: var(--color-burgundy);
+  border-color: var(--color-burgundy);
+}
+
+.pz-design-action--remove:hover {
+  background: var(--color-burgundy-deep);
+  border-color: var(--color-burgundy-deep);
 }
 
 .pz-drop__title {

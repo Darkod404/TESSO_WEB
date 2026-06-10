@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import '../../styles/home.css'
+import { FloatingHelp } from './FloatingHelp'
 import { ScrollToTop } from './ScrollToTop'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
@@ -13,6 +14,7 @@ export function MainLayout() {
         <Outlet />
       </main>
       <SiteFooter />
+      <FloatingHelp />
     </>
   )
 }

@@ -115,8 +115,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const { subtotal, shipping, total, currency } = useMemo(() => {
     const sub = resolvedItems.reduce((s, l) => s + l.product.price * l.quantity, 0)
-    const curr = resolvedItems[0]?.product.currency ?? 'MXN'
-    const ship = sub === 0 || sub >= 1500 ? 0 : 99
+    const curr = resolvedItems[0]?.product.currency ?? 'COP'
+    const ship = sub === 0 || sub >= 150000 ? 0 : 18900
     return { subtotal: sub, shipping: ship, total: sub + ship, currency: curr }
   }, [resolvedItems])
 

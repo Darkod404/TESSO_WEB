@@ -1,21 +1,40 @@
 import '../styles/personaliza.css'
-import { useId, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { PrintZonePicker } from '../components/personaliza/PrintZonePicker'
+import { ShirtViewer3D } from '../components/personaliza/ShirtViewer3D'
+import { DEFAULT_PRINT_ZONE, type PrintZoneId } from '../components/personaliza/printZones'
+import type { ZoneDesigns, ZoneRotations } from '../components/personaliza/ShirtModel'
+import { DEFAULT_GARMENT, GARMENTS, GARMENT_LIST, type GarmentId } from '../components/personaliza/garments'
+import { useCart } from '../context/CartContext'
+import type { ProductDto } from '../types/catalog'
 
-type Corte = 'hombre' | 'mujer'
 type Estilo = 'boxy' | 'regular' | 'oversize' | 'crop'
 type ColorKey = 'black' | 'white' | 'beige' | 'grey'
 type Talla = 'S' | 'M' | 'L' | 'XL'
-type Vista = 'front' | 'back'
 
-const SHIRT_BY_COLOR: Record<ColorKey, string> = {
-  black:
-    'https://images.unsplash.com/photo-1618354691375-d21c733c6143?auto=format&fit=crop&w=900&q=85',
-  white:
-    'https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=900&q=85',
-  beige:
-    'https://images.unsplash.com/photo-1620799140408-ed534d1cb507?auto=format&fit=crop&w=900&q=85',
-  grey:
-    'https://images.unsplash.com/photo-1622445275573-665b03034e9e?auto=format&fit=crop&w=900&q=85',
+const SHIRT_HEX: Record<ColorKey, string> = {
+  black: '#1a1a1a',
+  white: '#f5f5f5',
+  beige: '#d4c4b0',
+  grey: '#9a9a9a',
+}
+
+const COLOR_LABEL: Record<ColorKey, string> = {
+  black: 'Negro',
+  white: 'Blanco',
+  beige: 'Beige',
+  grey: 'Gris',
+}
+
+const PRICE_COP = 79900
+
+function formatCOP(value: number) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(value)
 }
 
 const ESTILOS = [
@@ -108,19 +127,109 @@ function IconBag() {
 
 export function PersonalizaPage() {
   const fileId = useId()
+  const navigate = useNavigate()
+  const { addItem } = useCart()
   const [activeStep, setActiveStep] = useState(1)
-  const [corte, setCorte] = useState<Corte>('hombre')
+  const [garment, setGarment] = useState<GarmentId>(DEFAULT_GARMENT)
   const [estilo, setEstilo] = useState<Estilo>('boxy')
+  const supportsFit = GARMENTS[garment].supportsFit
   const [color, setColor] = useState<ColorKey>('black')
   const [talla, setTalla] = useState<Talla>('M')
-  const [vista, setVista] = useState<Vista>('front')
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [activeZone, setActiveZone] = useState<PrintZoneId>(DEFAULT_PRINT_ZONE)
+  const [zoneDesigns, setZoneDesigns] = useState<ZoneDesigns>({})
+  const [zoneRotations, setZoneRotations] = useState<ZoneRotations>({})
+  const [zoneFileNames, setZoneFileNames] = useState<Partial<Record<PrintZoneId, string>>>({})
+  const zoneDesignsRef = useRef(zoneDesigns)
+  zoneDesignsRef.current = zoneDesigns
 
-  const lightShirt = color === 'white' || color === 'beige'
+  const zonesWithDesign = useMemo(
+    () => new Set(Object.keys(zoneDesigns) as PrintZoneId[]),
+    [zoneDesigns],
+  )
+  const activeFileName = zoneFileNames[activeZone] ?? null
+  const activeHasDesign = Boolean(zoneDesigns[activeZone])
+  const activeRotationDeg = Math.round((((zoneRotations[activeZone] ?? 0) * 180) / Math.PI) % 360)
+
+  useEffect(() => {
+    return () => {
+      Object.values(zoneDesignsRef.current).forEach((url) => {
+        if (url) URL.revokeObjectURL(url)
+      })
+    }
+  }, [])
+
+  function handleDesignUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const url = URL.createObjectURL(file)
+    setZoneDesigns((prev) => {
+      const previous = prev[activeZone]
+      if (previous) URL.revokeObjectURL(previous)
+      return { ...prev, [activeZone]: url }
+    })
+    setZoneFileNames((prev) => ({ ...prev, [activeZone]: file.name }))
+    e.target.value = ''
+  }
+
+  function removeActiveDesign() {
+    setZoneDesigns((prev) => {
+      const previous = prev[activeZone]
+      if (previous) URL.revokeObjectURL(previous)
+      const next = { ...prev }
+      delete next[activeZone]
+      return next
+    })
+    setZoneFileNames((prev) => {
+      const next = { ...prev }
+      delete next[activeZone]
+      return next
+    })
+    setZoneRotations((prev) => {
+      const next = { ...prev }
+      delete next[activeZone]
+      return next
+    })
+  }
+
+  function rotateActiveDesign(deltaDeg: number) {
+    setZoneRotations((prev) => {
+      const current = prev[activeZone] ?? 0
+      return { ...prev, [activeZone]: current + (deltaDeg * Math.PI) / 180 }
+    })
+  }
+
+  function setActiveRotationDeg(deg: number) {
+    setZoneRotations((prev) => ({ ...prev, [activeZone]: (deg * Math.PI) / 180 }))
+  }
 
   function goToStep(anchor: string, stepNum: number) {
     setActiveStep(stepNum)
     document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function handleBuyNow() {
+    const garmentLabel = GARMENTS[garment].label
+    const zonesCount = Object.keys(zoneDesigns).length
+    const detail = [COLOR_LABEL[color], talla, supportsFit ? estilo : null]
+      .filter(Boolean)
+      .join(' · ')
+    const product: ProductDto = {
+      id: `custom-${Date.now()}`,
+      name: `${garmentLabel} personalizada · ${detail}`,
+      slug: 'camiseta-personalizada',
+      description: zonesCount > 0 ? `${zonesCount} zona(s) con diseño` : 'Sin diseño',
+      price: PRICE_COP,
+      currency: 'COP',
+      imageUrl: null,
+      isFeatured: false,
+      stock: 99,
+      categoryId: 'custom',
+      categoryName: 'Personalizado',
+      categorySlug: 'personalizado',
+    }
+    addItem(product, 1)
+    navigate('/carrito')
   }
 
   return (
@@ -153,28 +262,15 @@ export function PersonalizaPage() {
         <div className="container pz-main__grid">
           <div className="pz-preview">
             <div className="pz-preview__frame">
-              <img
-                src={SHIRT_BY_COLOR[color]}
-                alt="Vista previa de camiseta"
-                className={vista === 'back' ? 'is-back' : undefined}
+              <ShirtViewer3D
+                garmentId={garment}
+                color={SHIRT_HEX[color]}
+                fit={estilo}
+                zoneDesigns={zoneDesigns}
+                zoneRotations={zoneRotations}
+                activeZone={activeZone}
+                showZoneGuides
               />
-              <div className={`pz-design-area${lightShirt ? ' is-light' : ''}`}>Área de diseño</div>
-            </div>
-            <div className="pz-view-toggle">
-              <button
-                type="button"
-                className={vista === 'front' ? 'is-active' : undefined}
-                onClick={() => setVista('front')}
-              >
-                Adelante
-              </button>
-              <button
-                type="button"
-                className={vista === 'back' ? 'is-active' : undefined}
-                onClick={() => setVista('back')}
-              >
-                Atrás
-              </button>
             </div>
           </div>
 
@@ -183,31 +279,41 @@ export function PersonalizaPage() {
               <h2 className="pz-block__title">
                 <span>01.</span> Configuración base
               </h2>
-              <p className="pz-sub">Corte</p>
-              <div className="pz-corte">
-                <button type="button" className={corte === 'hombre' ? 'is-active' : undefined} onClick={() => setCorte('hombre')}>
-                  Hombre
-                </button>
-                <button type="button" className={corte === 'mujer' ? 'is-active' : undefined} onClick={() => setCorte('mujer')}>
-                  Mujer
-                </button>
-              </div>
-              <p className="pz-sub" style={{ marginTop: '1rem' }}>
-                Estilo
-              </p>
-              <div className="pz-estilos">
-                {ESTILOS.map((e) => (
-                  <button
-                    key={e.id}
-                    type="button"
-                    className={`pz-estilo${estilo === e.id ? ' is-active' : ''}`}
-                    onClick={() => setEstilo(e.id)}
-                  >
-                    <span className="pz-estilo__name">{e.name}</span>
-                    <span className="pz-estilo__gr">{e.gr}</span>
-                  </button>
-                ))}
-              </div>
+              {GARMENT_LIST.length > 1 && (
+                <>
+                  <p className="pz-sub">Tipo de prenda</p>
+                  <div className="pz-corte" style={{ marginBottom: '1rem' }}>
+                    {GARMENT_LIST.map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        className={garment === g.id ? 'is-active' : undefined}
+                        onClick={() => setGarment(g.id as GarmentId)}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              {supportsFit && (
+                <>
+                  <p className="pz-sub">Estilo</p>
+                  <div className="pz-estilos">
+                    {ESTILOS.map((e) => (
+                      <button
+                        key={e.id}
+                        type="button"
+                        className={`pz-estilo${estilo === e.id ? ' is-active' : ''}`}
+                        onClick={() => setEstilo(e.id)}
+                      >
+                        <span className="pz-estilo__name">{e.name}</span>
+                        <span className="pz-estilo__gr">{e.gr}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </section>
 
             <section id="pz-s2" className="pz-block">
@@ -255,14 +361,19 @@ export function PersonalizaPage() {
               <h2 className="pz-block__title">
                 <span>03.</span> Sube tu diseño
               </h2>
-              <label className="pz-drop" htmlFor={fileId}>
-                <input
-                  id={fileId}
-                  type="file"
-                  className="sr-only"
-                  accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-                  onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
-                />
+              <PrintZonePicker
+                activeZone={activeZone}
+                zonesWithDesign={zonesWithDesign}
+                onSelect={setActiveZone}
+              />
+              <input
+                id={fileId}
+                type="file"
+                className="sr-only"
+                accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                onChange={handleDesignUpload}
+              />
+              <label className={`pz-drop${activeHasDesign ? ' has-design' : ''}`} htmlFor={fileId}>
                 <svg width="40" height="32" viewBox="0 0 24 20" fill="none" aria-hidden="true">
                   <path
                     d="M8 17 12 13l4 4M12 13V3M4 15H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2"
@@ -272,9 +383,56 @@ export function PersonalizaPage() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <p className="pz-drop__title">{fileName ?? 'Cargar arte gráfico'}</p>
-                <p className="pz-drop__hint">PNG o JPG alta calidad (máx. 10MB)</p>
+                <p className="pz-drop__title">
+                  {activeHasDesign ? activeFileName ?? 'Diseño cargado' : 'Cargar arte gráfico'}
+                </p>
+                <p className="pz-drop__hint">
+                  {activeHasDesign
+                    ? 'Haz clic para reemplazar el diseño de esta zona.'
+                    : 'PNG o JPG alta calidad (máx. 10MB). Se aplicará a la zona seleccionada.'}
+                </p>
               </label>
+              {activeHasDesign && (
+                <>
+                  <div className="pz-rotate">
+                    <div className="pz-rotate__head">
+                      <span className="pz-sub" style={{ margin: 0 }}>
+                        Rotar imagen
+                      </span>
+                      <span className="pz-rotate__value">{((activeRotationDeg % 360) + 360) % 360}°</span>
+                    </div>
+                    <div className="pz-rotate__controls">
+                      <button type="button" className="pz-rotate__btn" onClick={() => rotateActiveDesign(-15)} aria-label="Girar a la izquierda">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <path d="M9 5 4 10l5 5M4 10h9a7 7 0 0 1 7 7v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      <input
+                        type="range"
+                        min={0}
+                        max={359}
+                        value={((activeRotationDeg % 360) + 360) % 360}
+                        onChange={(e) => setActiveRotationDeg(Number(e.target.value))}
+                        className="pz-rotate__slider"
+                        aria-label="Ángulo de rotación"
+                      />
+                      <button type="button" className="pz-rotate__btn" onClick={() => rotateActiveDesign(15)} aria-label="Girar a la derecha">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <path d="m15 5 5 5-5 5M20 10h-9a7 7 0 0 0-7 7v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="pz-design-actions">
+                    <label className="pz-design-action" htmlFor={fileId}>
+                      Cambiar diseño
+                    </label>
+                    <button type="button" className="pz-design-action pz-design-action--remove" onClick={removeActiveDesign}>
+                      Quitar diseño
+                    </button>
+                  </div>
+                </>
+              )}
               <div className="pz-tip">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
@@ -290,11 +448,11 @@ export function PersonalizaPage() {
               <div className="pz-price-row">
                 <p className="pz-price">
                   <span>Precio final</span>
-                  35,00&nbsp;US$
+                  {formatCOP(PRICE_COP)}
                 </p>
                 <span className="pz-shipping">Envío gratis</span>
               </div>
-              <button type="button" className="btn btn-primary pz-buy">
+              <button type="button" className="btn btn-primary pz-buy" onClick={handleBuyNow}>
                 Comprar ahora <IconBag />
               </button>
             </div>
