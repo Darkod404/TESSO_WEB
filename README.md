@@ -6,18 +6,16 @@ Front React + Vite de la tienda TESSO.
 
 Desarrollo activo en **`development`**. `main` para releases.
 
-## API
+## Variables de entorno
 
 ```bash
-# .env.development (ya incluido en el repo de ejemplo)
-VITE_API_URL=http://localhost:8080
+cp .env.example .env.development
 ```
 
-Cuando `TESSO_API` esté corriendo, en `src/data/mockCatalog.ts`:
-
-```ts
-export const USE_TEMPORARY_MOCK_CATALOG = false
-```
+| Variable | Descripción |
+|----------|-------------|
+| `VITE_API_URL` | Base URL del API (sin slash final) |
+| `VITE_USE_MOCK_CATALOG` | `true` = mock local; `false` = consume TESSO_API |
 
 ## Scripts
 
@@ -26,6 +24,12 @@ npm install
 npm run dev
 ```
 
-## Checkout (próximo)
+## ¿El front consume el back?
 
-Soportará **guest** (sin cuenta) y **cuenta** (historial / direcciones / diseños).
+Sí está cableado (`catalogApi`, `authApi`, `orderApi`, `paymentApi`), pero por defecto **`VITE_USE_MOCK_CATALOG=true`**, así que el catálogo sigue en mock hasta que el API esté arriba y pongas `false`.
+
+Checkout ya crea pedido + payment intent contra el API (requiere API corriendo).
+
+## Checkout
+
+Soporta **guest** y **cuenta** (login/registro en la misma pantalla).

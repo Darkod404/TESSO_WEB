@@ -297,6 +297,13 @@ export function CartPage() {
             <div className="cart-invoice__cta">
               <Link
                 to="/checkout"
+                state={{
+                  department,
+                  city,
+                  address,
+                  complement,
+                  mapPos,
+                }}
                 className={`btn btn-primary cart-checkout-btn${canContinue ? '' : ' is-disabled'}`}
                 aria-disabled={!canContinue}
                 onClick={(e) => {

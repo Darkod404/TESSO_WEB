@@ -1,13 +1,13 @@
 /**
- * Catálogo ficticio temporal — desactivar cuando el backend esté arriba:
- * 1) `docker compose up --build` en TESSO_API
- * 2) VITE_API_URL en `.env.development`
- * 3) `USE_TEMPORARY_MOCK_CATALOG = false`
+ * Catálogo: mock local o TESSO_API.
+ * Control: VITE_USE_MOCK_CATALOG en `.env.development` (default true).
  */
 import type { CategoryDto, PagedResult, ProductDto } from '../types/catalog'
 import type { CartProductSnapshot } from '../types/cart'
 
-export const USE_TEMPORARY_MOCK_CATALOG = true
+const mockFlag = import.meta.env.VITE_USE_MOCK_CATALOG
+export const USE_TEMPORARY_MOCK_CATALOG =
+  mockFlag === undefined || mockFlag === '' ? true : mockFlag !== 'false' && mockFlag !== '0'
 
 const CAT_HOMBRE_ID = '10000000-0000-4000-8000-000000000001'
 const CAT_MUJER_ID = '10000000-0000-4000-8000-000000000002'
