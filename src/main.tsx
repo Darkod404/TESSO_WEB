@@ -2,7 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import faviconUrl from './assets/LogoPrincipal.png'
+import { MEDIA } from './data/mediaUrls'
+
+const faviconUrl = MEDIA.logo
 
 const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
 if (favicon) {

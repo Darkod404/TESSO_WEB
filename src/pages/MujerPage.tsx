@@ -1,41 +1,28 @@
 import '../styles/mujer.css'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { MujerProductCard } from '../components/mujer/MujerProductCard'
 import { FilterDropdown } from '../components/filters/FilterDropdown'
 import { useMujerCatalog } from '../hooks/useMujerCatalog'
+import { contentApi } from '../services/contentApi'
+import type { ProductDto } from '../types/catalog'
 
 const STYLES = ['Oversize', 'Boxy fit', 'Regular fit', 'Crop'] as const
-const THEMES = ['Anime', 'POP', 'Streetwear', 'Minimalista'] as const
+const THEMES = ['Anime', 'POP', 'Streetwear', 'Minimalista', 'Básico'] as const
 const SIZES = ['S', 'M', 'L', 'XL'] as const
 
 type StyleOpt = (typeof STYLES)[number]
 type ThemeOpt = (typeof THEMES)[number]
 type SizeOpt = (typeof SIZES)[number]
 
-type ProductTags = {
-  style: StyleOpt
-  theme: ThemeOpt
-  sizes: readonly SizeOpt[]
+function productSizes(p: ProductDto): SizeOpt[] {
+  const fromVariants = (p.variants ?? [])
+    .map((v) => v.sizeCode)
+    .filter((s): s is SizeOpt => !!s && (SIZES as readonly string[]).includes(s))
+  return fromVariants.length ? [...new Set(fromVariants)] : [...SIZES]
 }
 
-function hashCode(id: string): number {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-function tagsFromId(id: string): ProductTags {
-  const h = hashCode(id)
-  const style = STYLES[h % STYLES.length]
-  const theme = THEMES[(h >> 3) % THEMES.length]
-  const sizeMask = (h >> 5) & 0b1111
-  const sizes = SIZES.filter((_, idx) => sizeMask & (1 << idx))
-  return { style, theme, sizes: sizes.length ? sizes : (SIZES as readonly SizeOpt[]) }
-}
-
-function tagLine(id: string) {
-  const t = tagsFromId(id)
-  return `${t.style} · ${t.theme}`
+function tagLine(p: ProductDto) {
+  return [p.styleTag, p.theme].filter(Boolean).join(' · ') || 'Colección'
 }
 
 type SortKey = 'novedades' | 'precio-asc' | 'precio-desc' | 'nombre'
@@ -47,15 +34,28 @@ function toggle<T>(set: ReadonlySet<T>, value: T): Set<T> {
   return next
 }
 
-const HERO_IMG =
+const HERO_FALLBACK =
   'https://images.unsplash.com/photo-1539109136881-3be0616acf5b?auto=format&fit=crop&w=1200&q=85'
 
 export function MujerPage() {
   const state = useMujerCatalog()
+  const [heroImg, setHeroImg] = useState(HERO_FALLBACK)
   const [stylesSel, setStylesSel] = useState<ReadonlySet<StyleOpt>>(new Set())
   const [themesSel, setThemesSel] = useState<ReadonlySet<ThemeOpt>>(new Set())
   const [sizesSel, setSizesSel] = useState<ReadonlySet<SizeOpt>>(new Set())
   const [sortKey, setSortKey] = useState<SortKey>('novedades')
+
+  useEffect(() => {
+    contentApi
+      .media()
+      .then((slots) => {
+        const url = slots['mujer.hero']?.url
+        if (url) setHeroImg(url)
+      })
+      .catch(() => {
+        /* keep fallback */
+      })
+  }, [])
 
   const activeCount = stylesSel.size + themesSel.size + sizesSel.size
 
@@ -68,10 +68,9 @@ export function MujerPage() {
   const rows = useMemo(() => {
     if (state.status !== 'ok') return []
     const filtered = state.products.filter((p) => {
-      const t = tagsFromId(p.id)
-      if (stylesSel.size > 0 && !stylesSel.has(t.style)) return false
-      if (themesSel.size > 0 && !themesSel.has(t.theme)) return false
-      if (sizesSel.size > 0 && !t.sizes.some((s) => sizesSel.has(s))) return false
+      if (stylesSel.size > 0 && (!p.styleTag || !stylesSel.has(p.styleTag as StyleOpt))) return false
+      if (themesSel.size > 0 && (!p.theme || !themesSel.has(p.theme as ThemeOpt))) return false
+      if (sizesSel.size > 0 && !productSizes(p).some((s) => sizesSel.has(s))) return false
       return true
     })
     const sorted = [...filtered]
@@ -93,7 +92,7 @@ export function MujerPage() {
             </p>
           </div>
           <div className="mujer-hero__visual">
-            <img src={HERO_IMG} alt="" />
+            <img src={heroImg} alt="" />
           </div>
         </div>
       </section>
@@ -172,7 +171,7 @@ export function MujerPage() {
                 <MujerProductCard
                   key={p.id}
                   product={p}
-                  tagLine={tagLine(p.id)}
+                  tagLine={tagLine(p)}
                   isNuevo={p.isFeatured}
                 />
               ))}
@@ -180,7 +179,6 @@ export function MujerPage() {
           )}
         </div>
       </section>
-
     </>
   )
 }

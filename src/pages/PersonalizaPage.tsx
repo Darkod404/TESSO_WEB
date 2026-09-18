@@ -7,6 +7,7 @@ import { DEFAULT_PRINT_ZONE, type PrintZoneId } from '../components/personaliza/
 import type { ZoneDesigns, ZoneRotations } from '../components/personaliza/ShirtModel'
 import { DEFAULT_GARMENT, GARMENTS, GARMENT_LIST, type GarmentId } from '../components/personaliza/garments'
 import { useCart } from '../context/CartContext'
+import { useStoreSettings } from '../context/StoreSettingsContext'
 import type { ProductDto } from '../types/catalog'
 
 type Estilo = 'boxy' | 'regular' | 'oversize' | 'crop'
@@ -29,12 +30,16 @@ const COLOR_LABEL: Record<ColorKey, string> = {
 
 const PRICE_COP = 79900
 
-function formatCOP(value: number) {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value)
+function formatMoney(value: number, currency: string) {
+  try {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value)
+  } catch {
+    return `${value.toFixed(0)} ${currency}`
+  }
 }
 
 const ESTILOS = [
@@ -51,29 +56,22 @@ const STEPS = [
   { n: 4, code: '04', title: 'Final', desc: 'Entrega', anchor: 'pz-s4' },
 ] as const
 
-const BENEFITS = [
+const BENEFITS_BASE = [
   {
     key: 'sost',
     title: 'Sostenibilidad',
     body: 'Tela peruana premium y algodón perchado. Producción bajo demanda para reducir residuos.',
     highlight: false,
-    icon: 'plant',
+    icon: 'plant' as const,
   },
   {
     key: 'dtf',
     title: 'Impresión DTF',
     body: 'Tecnología de impresión directa a prenda para colores vibrantes y duraderos.',
     highlight: true,
-    icon: 'brush',
+    icon: 'brush' as const,
   },
-  {
-    key: 'env',
-    title: 'Envío express',
-    body: 'Recibe tu creación personalizada en 2-3 para unidades y para pedidos masivos de 7- 10 días hábiles en tu domicilio.',
-    highlight: false,
-    icon: 'truck',
-  },
-] as const
+]
 
 function IconPlant() {
   return (
@@ -129,6 +127,7 @@ export function PersonalizaPage() {
   const fileId = useId()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const settings = useStoreSettings()
   const [activeStep, setActiveStep] = useState(1)
   const [garment, setGarment] = useState<GarmentId>(DEFAULT_GARMENT)
   const [estilo, setEstilo] = useState<Estilo>('boxy')
@@ -141,6 +140,20 @@ export function PersonalizaPage() {
   const [zoneFileNames, setZoneFileNames] = useState<Partial<Record<PrintZoneId, string>>>({})
   const zoneDesignsRef = useRef(zoneDesigns)
   zoneDesignsRef.current = zoneDesigns
+
+  const benefits = useMemo(
+    () => [
+      ...BENEFITS_BASE,
+      {
+        key: 'env',
+        title: 'Producción y envío',
+        body: settings.productionLeadTimeText,
+        highlight: false,
+        icon: 'truck' as const,
+      },
+    ],
+    [settings.productionLeadTimeText],
+  )
 
   const zonesWithDesign = useMemo(
     () => new Set(Object.keys(zoneDesigns) as PrintZoneId[]),
@@ -220,13 +233,16 @@ export function PersonalizaPage() {
       slug: 'camiseta-personalizada',
       description: zonesCount > 0 ? `${zonesCount} zona(s) con diseño` : 'Sin diseño',
       price: PRICE_COP,
-      currency: 'COP',
+      currency: settings.currency || 'COP',
       imageUrl: null,
       isFeatured: false,
       stock: 99,
       categoryId: 'custom',
       categoryName: 'Personalizado',
       categorySlug: 'personalizado',
+      theme: null,
+      styleTag: supportsFit ? estilo : null,
+      variants: [],
     }
     addItem(product, 1)
     navigate('/carrito')
@@ -448,7 +464,7 @@ export function PersonalizaPage() {
               <div className="pz-price-row">
                 <p className="pz-price">
                   <span>Precio final</span>
-                  {formatCOP(PRICE_COP)}
+                  {formatMoney(PRICE_COP, settings.currency || 'COP')}
                 </p>
                 <span className="pz-shipping">Envío gratis</span>
               </div>
@@ -466,7 +482,7 @@ export function PersonalizaPage() {
             Ventajas T3SO
           </h2>
           <div className="pz-benefits__grid">
-            {BENEFITS.map((b) => (
+            {benefits.map((b) => (
               <article
                 key={b.key}
                 className={`pz-benefit${b.highlight ? ' pz-benefit--highlight' : ''}`}

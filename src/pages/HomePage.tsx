@@ -1,35 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import heroHomeImg from '../assets/HomePage1.png'
-import pillarImgDisenos from '../assets/HomePage2.png'
-import pillarImgPersonalizacion from '../assets/HomePage3.png'
-import pillarImgOrdenesEspeciales from '../assets/HomePage4.png'
-import pillarImgProduccionRapida from '../assets/HomePage5.png'
 import { useCatalogHome } from '../hooks/useCatalogHome'
+import { useHomeContent } from '../hooks/useHomeContent'
 import { ProductCard } from '../components/product/ProductCard'
-
-const PILLARS = [
-  {
-    title: 'Diseños exclusivos de hombre y mujer',
-    body: 'Piezas auténticas para quienes buscan destacar.',
-    img: pillarImgDisenos,
-  },
-  {
-    title: 'Personalización total',
-    body: 'Sube tu diseño o usa nuestras herramientas para crear algo único.',
-    img: pillarImgPersonalizacion,
-  },
-  {
-    title: 'Órdenes especiales',
-    body: 'Soluciones para empresas, eventos y lanzamientos de marcas.',
-    img: pillarImgOrdenesEspeciales,
-  },
-  {
-    title: 'Producción rápida',
-    body: 'Entregas ágiles sin comprometer un milímetro de calidad.',
-    img: pillarImgProduccionRapida,
-  },
-] as const
 
 function IconQuality() {
   return (
@@ -75,46 +48,40 @@ function IconFlexible() {
   )
 }
 
-const FAQS = [
-  {
-    q: '¿Cuál es el tiempo de entrega?',
-    a: 'Para diseños de colección, entregamos en 2-3 días hábiles en la ciudad de Bogotá. Para pedidos personalizados, el tiempo oscila entre 7 y 10 días dependiendo de la complejidad, ciudad y volumen.',
-  },
-  {
-    q: '¿Tienen pedido mínimo para personalizados?',
-    a: 'No. Creemos en la identidad individual. Puedes pedir desde una sola camiseta personalizada con la misma calidad que un pedido masivo.',
-  },
-  {
-    q: '¿Qué tipo de telas utilizan?',
-    a: 'Utilizamos tela peruana premium, algodón perchado 100% premium de 250 gr para nuestras líneas de colección. Para pedidos masivos usamos algodón perchado entre 150 y 180 gr (depende de cada personalización), garantizando durabilidad y confort superior.',
-  },
-  {
-    q: '¿Hacen envíos internacionales?',
-    a: 'Actualmente realizamos envíos a todo el territorio nacional. Estamos trabajando para habilitar envíos internacionales próximamente.',
-  },
-] as const
-
 export function HomePage() {
   const state = useCatalogHome()
+  const { data: content } = useHomeContent()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  const hero = content?.copy['home.hero']
+  const pillarsIntro = content?.copy['home.pillars_intro']
+  const pillars = content?.pillars ?? []
+  const faqs = content?.faqs ?? []
+  const heroImg = content?.media['home.hero']
+  const atelierImg = content?.media['home.atelier']
 
   return (
     <>
       <section className="hero">
         <div className="container hero__grid">
           <div className="hero__copy">
-            <span className="kicker">Viste con confianza</span>
-            <h1 className="display-title">Camisetas que representan tu identidad</h1>
-            <p className="hero__subtitle">Diseños exclusivos + estampados personalizados</p>
+            <span className="kicker">{hero?.kicker ?? 'Viste con confianza'}</span>
+            <h1 className="display-title">
+              {hero?.title ?? 'Camisetas que representan tu identidad'}
+            </h1>
+            <p className="hero__subtitle">
+              {hero?.subtitle ?? 'Diseños exclusivos + estampados personalizados'}
+            </p>
             <p className="lead">
-              Creamos camisetas para personas, marcas y eventos que quieren destacar con estilo propio.
+              {hero?.body ??
+                'Creamos camisetas para personas, marcas y eventos que quieren destacar con estilo propio.'}
             </p>
             <div className="hero__actions">
-              <a className="btn btn-primary" href="#destacados">
-                Comprar colección
+              <a className="btn btn-primary" href={hero?.ctaPrimaryHref ?? '#destacados'}>
+                {hero?.ctaPrimaryLabel ?? 'Comprar colección'}
               </a>
-              <Link className="btn btn-outline" to="/personaliza">
-                Personalizar camiseta
+              <Link className="btn btn-outline" to={hero?.ctaSecondaryHref ?? '/personaliza'}>
+                {hero?.ctaSecondaryLabel ?? 'Personalizar camiseta'}
               </Link>
             </div>
           </div>
@@ -122,24 +89,27 @@ export function HomePage() {
           <div className="hero__divider" aria-hidden="true" />
 
           <div className="hero__visual">
-            <img src={heroHomeImg} alt="Modelo con camiseta negra y estampado" />
+            <img
+              src={heroImg?.url ?? ''}
+              alt={heroImg?.altText ?? 'Modelo con camiseta negra y estampado'}
+            />
           </div>
         </div>
       </section>
 
       <section className="pillars-intro" aria-labelledby="pillars-heading">
         <div className="container">
-          <h2 id="pillars-heading">Diseños que hablan por ti</h2>
+          <h2 id="pillars-heading">{pillarsIntro?.title ?? 'Diseños que hablan por ti'}</h2>
           <hr className="pillars-intro__rule" />
         </div>
       </section>
 
       <section className="pillars" aria-label="Servicios">
         <div className="container pillars__grid">
-          {PILLARS.map((p) => (
-            <article key={p.title} className="pillar-card">
+          {pillars.map((p) => (
+            <article key={p.id} className="pillar-card">
               <div className="pillar-card__media">
-                <img src={p.img} alt="" loading="lazy" decoding="async" />
+                <img src={p.imageUrl ?? ''} alt="" loading="lazy" decoding="async" />
               </div>
               <div className="pillar-card__body">
                 <h3>{p.title}</h3>
@@ -154,8 +124,8 @@ export function HomePage() {
         <div className="container identity__grid">
           <div className="identity__visual">
             <img
-              src="https://images.unsplash.com/photo-1441986300917-646646bd8d0c?auto=format&fit=crop&w=1200&q=80"
-              alt="Interior de tienda de moda"
+              src={atelierImg?.url ?? ''}
+              alt={atelierImg?.altText ?? 'Interior de tienda de moda'}
               loading="lazy"
               decoding="async"
             />
@@ -214,7 +184,7 @@ export function HomePage() {
       <section className="catalog-band section" id="colecciones">
         <div className="container">
           <h2 className="section-title">Colecciones</h2>
-          <p className="section-sub">Datos desde tu API (.NET + SQL Server).</p>
+          <p className="section-sub">Datos desde el catálogo de TESSO API.</p>
 
           {state.status === 'error' ? (
             <div className="state state--error">
@@ -279,12 +249,12 @@ export function HomePage() {
           </header>
 
           <ul className="faq__list">
-            {FAQS.map((item, index) => {
+            {faqs.map((item, index) => {
               const isOpen = openFaq === index
               const panelId = `faq-panel-${index}`
               const buttonId = `faq-button-${index}`
               return (
-                <li key={item.q} className={`faq__item${isOpen ? ' is-open' : ''}`}>
+                <li key={item.id} className={`faq__item${isOpen ? ' is-open' : ''}`}>
                   <h3 className="faq__heading">
                     <button
                       type="button"
@@ -294,7 +264,7 @@ export function HomePage() {
                       aria-controls={panelId}
                       onClick={() => setOpenFaq((current) => (current === index ? null : index))}
                     >
-                      <span className="faq__question">{item.q}</span>
+                      <span className="faq__question">{item.question}</span>
                       <span className="faq__icon" aria-hidden="true">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                           <path
@@ -315,7 +285,7 @@ export function HomePage() {
                     className="faq__answer"
                     hidden={!isOpen}
                   >
-                    <p>{item.a}</p>
+                    <p>{item.answer}</p>
                   </div>
                 </li>
               )

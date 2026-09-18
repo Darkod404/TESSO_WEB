@@ -9,19 +9,23 @@ import {
 } from 'react'
 import { resolveCartProductSnapshot } from '../data/mockCatalog'
 import type { ProductDto } from '../types/catalog'
-import type { CartLineItem } from '../types/cart'
+import {
+  lineKey,
+  pickDefaultVariant,
+  type CartLineItem,
+  type CartProductSnapshot,
+} from '../types/cart'
+import { useStoreSettings } from './StoreSettingsContext'
 
-const STORAGE_KEY = 'tesso-cart-v1'
+const STORAGE_KEY = 'tesso-cart-v2'
 
 type CartContextValue = {
   items: CartLineItem[]
-  /** Líneas con nombre/precio/imagen alineados al catálogo mock cuando aplica. */
   resolvedItems: CartLineItem[]
-  /** Suma de unidades en todas las líneas (badge del carrito). */
   totalQuantity: number
-  addItem: (product: ProductDto, quantity?: number) => void
-  setQuantity: (productId: string, quantity: number) => void
-  removeItem: (productId: string) => void
+  addItem: (product: ProductDto, quantity?: number, variantId?: string | null) => void
+  setQuantity: (lineId: string, quantity: number) => void
+  removeItem: (lineId: string) => void
   clear: () => void
   subtotal: number
   shipping: number
@@ -50,18 +54,35 @@ function loadItems(): CartLineItem[] {
   }
 }
 
-function snapshotFromProduct(product: ProductDto): CartLineItem['product'] {
+function snapshotFromProduct(
+  product: ProductDto,
+  variantId?: string | null,
+): CartProductSnapshot {
+  const variant =
+    (variantId
+      ? product.variants?.find((v) => v.id === variantId)
+      : null) ?? pickDefaultVariant(product)
+
   return {
     id: product.id,
     name: product.name,
     slug: product.slug,
-    price: product.price,
+    price: variant?.price ?? product.price,
     currency: product.currency,
     imageUrl: product.imageUrl,
+    variantId: variant?.id ?? null,
+    sku: variant?.sku ?? null,
+    sizeCode: variant?.sizeCode ?? null,
+    colorCode: variant?.colorCode ?? null,
   }
 }
 
+function cartLineId(line: CartLineItem): string {
+  return lineKey(line.product.id, line.product.variantId)
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
+  const settings = useStoreSettings()
   const [items, setItems] = useState<CartLineItem[]>(() =>
     typeof window === 'undefined' ? [] : loadItems(),
   )
@@ -70,11 +91,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items])
 
-  const addItem = useCallback((product: ProductDto, quantity = 1) => {
+  const addItem = useCallback((product: ProductDto, quantity = 1, variantId?: string | null) => {
     const q = Math.max(1, quantity)
     setItems((prev) => {
-      const snap = snapshotFromProduct(product)
-      const i = prev.findIndex((l) => l.product.id === snap.id)
+      const snap = snapshotFromProduct(product, variantId)
+      const key = lineKey(snap.id, snap.variantId)
+      const i = prev.findIndex((l) => cartLineId(l) === key)
       if (i === -1) return [...prev, { product: snap, quantity: q }]
       const next = [...prev]
       next[i] = { ...next[i], quantity: next[i].quantity + q }
@@ -82,19 +104,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
+  const setQuantity = useCallback((lineId: string, quantity: number) => {
     const q = Math.floor(quantity)
     if (q < 1) {
-      setItems((prev) => prev.filter((l) => l.product.id !== productId))
+      setItems((prev) => prev.filter((l) => cartLineId(l) !== lineId))
       return
     }
     setItems((prev) =>
-      prev.map((l) => (l.product.id === productId ? { ...l, quantity: q } : l)),
+      prev.map((l) => (cartLineId(l) === lineId ? { ...l, quantity: q } : l)),
     )
   }, [])
 
-  const removeItem = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((l) => l.product.id !== productId))
+  const removeItem = useCallback((lineId: string) => {
+    setItems((prev) => prev.filter((l) => cartLineId(l) !== lineId))
   }, [])
 
   const clear = useCallback(() => setItems([]), [])
@@ -115,10 +137,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const { subtotal, shipping, total, currency } = useMemo(() => {
     const sub = resolvedItems.reduce((s, l) => s + l.product.price * l.quantity, 0)
-    const curr = resolvedItems[0]?.product.currency ?? 'COP'
-    const ship = sub === 0 || sub >= 150000 ? 0 : 18900
+    const curr = resolvedItems[0]?.product.currency ?? settings.currency ?? 'COP'
+    const threshold = settings.freeShippingThreshold
+    const defaultShip = settings.defaultShippingCost
+    const ship = sub === 0 || sub >= threshold ? 0 : defaultShip
     return { subtotal: sub, shipping: ship, total: sub + ship, currency: curr }
-  }, [resolvedItems])
+  }, [resolvedItems, settings.currency, settings.freeShippingThreshold, settings.defaultShippingCost])
 
   const value = useMemo(
     () => ({

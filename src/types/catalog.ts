@@ -7,6 +7,16 @@ export type CategoryDto = {
   productCount: number
 }
 
+export type ProductVariantDto = {
+  id: string
+  sku: string
+  sizeCode: string | null
+  colorCode: string | null
+  styleCode: string | null
+  price: number
+  stock: number
+}
+
 export type ProductDto = {
   id: string
   name: string
@@ -20,6 +30,9 @@ export type ProductDto = {
   categoryId: string
   categoryName: string
   categorySlug: string
+  theme: string | null
+  styleTag: string | null
+  variants: ProductVariantDto[]
 }
 
 export type PagedResult<T> = {

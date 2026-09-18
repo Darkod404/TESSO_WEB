@@ -11,7 +11,7 @@ export type CreateOrderPayload = {
   shipLat?: number
   shipLng?: number
   notes?: string
-  items: { productId: string; quantity: number }[]
+  items: { productId: string; variantId?: string; quantity: number }[]
 }
 
 export type OrderDto = {

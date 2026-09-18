@@ -1,16 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useStoreSettings } from '../../context/StoreSettingsContext'
 import '../../styles/floating-help.css'
 
-// Cambia este número por el de la tienda (formato internacional, sin "+" ni espacios).
-const WHATSAPP_NUMBER = '573001234567'
-const WHATSAPP_MESSAGE = 'Hola T3SO, tengo una pregunta sobre…'
-
-const FAQS = [
-  {
-    q: '¿Cuál es el tiempo de entrega?',
-    a: 'Colección: 3-5 días hábiles. Personalizados: 7-10 días según complejidad.',
-  },
+const FAQ_STATIC = [
   {
     q: '¿Hay pedido mínimo para personalizados?',
     a: 'No. Puedes pedir desde una sola camiseta con la misma calidad.',
@@ -49,11 +42,45 @@ function IconClose() {
   )
 }
 
+function buildWhatsAppHref(baseUrl: string, phone: string, message: string): string {
+  if (baseUrl.includes('wa.me') || baseUrl.includes('api.whatsapp.com')) {
+    try {
+      const url = new URL(baseUrl)
+      if (message) url.searchParams.set('text', message)
+      return url.toString()
+    } catch {
+      /* fall through */
+    }
+  }
+  const digits = phone.replace(/\D/g, '')
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+}
+
 export function FloatingHelp() {
+  const settings = useStoreSettings()
   const [open, setOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
+  const whatsappUrl = useMemo(
+    () =>
+      buildWhatsAppHref(
+        settings.whatsappUrl,
+        settings.contactPhone,
+        settings.whatsappDefaultMessage,
+      ),
+    [settings.whatsappUrl, settings.contactPhone, settings.whatsappDefaultMessage],
+  )
+
+  const faqs = useMemo(
+    () => [
+      {
+        q: '¿Cuál es el tiempo de entrega?',
+        a: settings.productionLeadTimeText,
+      },
+      ...FAQ_STATIC,
+    ],
+    [settings.productionLeadTimeText],
+  )
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -70,7 +97,9 @@ export function FloatingHelp() {
           <header className="fab-help__head">
             <div>
               <p className="fab-help__title">¿Necesitas ayuda?</p>
-              <p className="fab-help__subtitle">Estamos para resolver tus dudas</p>
+              <p className="fab-help__subtitle">
+                {settings.storeHoursText || 'Estamos para resolver tus dudas'}
+              </p>
             </div>
             <button type="button" className="fab-help__close" aria-label="Cerrar" onClick={() => setOpen(false)}>
               <IconClose />
@@ -87,13 +116,13 @@ export function FloatingHelp() {
               <IconWhatsApp />
               <span>
                 <strong>Escríbenos por WhatsApp</strong>
-                <small>Respuesta en minutos</small>
+                <small>{settings.contactPhoneDisplay}</small>
               </span>
             </a>
 
             <p className="fab-help__section-title">Preguntas frecuentes</p>
             <div className="fab-help__faqs">
-              {FAQS.map((item, i) => {
+              {faqs.map((item, i) => {
                 const isOpen = openFaq === i
                 return (
                   <div key={item.q} className="fab-help__faq">

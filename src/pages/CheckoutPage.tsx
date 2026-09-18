@@ -115,6 +115,7 @@ export function CheckoutPage() {
         shipLng: nav.mapPos?.lng,
         items: resolvedItems.map((l) => ({
           productId: l.product.id,
+          variantId: l.product.variantId ?? undefined,
           quantity: l.quantity,
         })),
       })

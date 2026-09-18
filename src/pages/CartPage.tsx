@@ -3,12 +3,9 @@ import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { DeliveryMap, geocodeAddress, type LatLng } from '../components/cart/DeliveryMap'
 import { AddressBuilder } from '../components/cart/AddressBuilder'
-import {
-  FREE_SHIPPING_THRESHOLD,
-  SHIPPING_ZONES,
-  getCities,
-  resolveShippingCost,
-} from '../data/shippingZones'
+import { useStoreSettings } from '../context/StoreSettingsContext'
+import { shippingApi, type ShippingCity, type ShippingQuote } from '../services/shippingApi'
+import { lineKey } from '../types/cart'
 import '../styles/cart.css'
 
 function formatMoney(value: number, currency: string) {
@@ -35,9 +32,20 @@ const STEPS = [
   { id: 'pago', label: 'Pago' },
 ] as const
 
+const EMPTY_QUOTE: ShippingQuote = {
+  cost: 0,
+  etaDays: '—',
+  isFree: false,
+  located: false,
+  freeShippingThreshold: 150000,
+}
+
 export function CartPage() {
   const { resolvedItems, setQuantity, removeItem, subtotal, currency } = useCart()
+  const settings = useStoreSettings()
 
+  const [departments, setDepartments] = useState<string[]>([])
+  const [cities, setCities] = useState<ShippingCity[]>([])
   const [department, setDepartment] = useState('')
   const [city, setCity] = useState('')
   const [address, setAddress] = useState('')
@@ -47,17 +55,73 @@ export function CartPage() {
   const [locating, setLocating] = useState(false)
   const [geoError, setGeoError] = useState<string | null>(null)
   const [geoNote, setGeoNote] = useState<string | null>(null)
+  const [quote, setQuote] = useState<ShippingQuote>(EMPTY_QUOTE)
   const requestRef = useRef(0)
 
-  const cities = useMemo(() => getCities(department), [department])
-  const shippingInfo = useMemo(
-    () => resolveShippingCost(department || null, city || null, subtotal),
-    [department, city, subtotal],
-  )
-  const total = subtotal + shippingInfo.cost
-  const cur = currency || 'COP'
+  const freeShippingThreshold = quote.freeShippingThreshold || settings.freeShippingThreshold
+  const shippingInfo = quote
+  const total = subtotal + (department && city ? shippingInfo.cost : 0)
+  const cur = currency || settings.currency || 'COP'
 
-  // Búsqueda automática en el mapa al cambiar departamento, ciudad o dirección (con debounce).
+  useEffect(() => {
+    shippingApi
+      .departments()
+      .then((rows) => setDepartments(rows.map((d) => d.name)))
+      .catch(() => setDepartments([]))
+  }, [])
+
+  useEffect(() => {
+    if (!department) {
+      setCities([])
+      return
+    }
+    let cancelled = false
+    shippingApi
+      .cities(department)
+      .then((rows) => {
+        if (!cancelled) setCities(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setCities([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [department])
+
+  useEffect(() => {
+    if (!department || !city) {
+      setQuote({
+        ...EMPTY_QUOTE,
+        freeShippingThreshold: settings.freeShippingThreshold,
+        cost: settings.defaultShippingCost,
+        etaDays: settings.defaultShippingEta,
+      })
+      return
+    }
+    let cancelled = false
+    shippingApi
+      .quote(department, city, subtotal)
+      .then((q) => {
+        if (!cancelled) setQuote(q)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          const isFree = subtotal >= settings.freeShippingThreshold
+          setQuote({
+            cost: isFree ? 0 : settings.defaultShippingCost,
+            etaDays: settings.defaultShippingEta,
+            isFree,
+            located: false,
+            freeShippingThreshold: settings.freeShippingThreshold,
+          })
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [department, city, subtotal, settings])
+
   useEffect(() => {
     if (!department || !city) return
     const handle = setTimeout(async () => {
@@ -65,7 +129,7 @@ export function CartPage() {
       setLocating(true)
       setGeoError(null)
       const result = await geocodeAddress({ street: address.trim(), city, state: department })
-      if (id !== requestRef.current) return // descarta resultados obsoletos
+      if (id !== requestRef.current) return
       setLocating(false)
       if (!result) {
         setGeoNote(null)
@@ -126,54 +190,59 @@ export function CartPage() {
                 Carro de compras <span className="cart-panel__count">{resolvedItems.length}</span>
               </h1>
               <ul className="cart-lines">
-                {resolvedItems.map(({ product, quantity }) => (
-                  <li key={product.id} className="cart-line">
-                    <div className="cart-line__media">
-                      <img src={product.imageUrl ?? fallbackImg()} alt="" width={88} height={110} loading="lazy" />
-                    </div>
-                    <div className="cart-line__info">
-                      <h3 className="cart-line__name">{product.name}</h3>
-                      <p className="cart-line__unit">{formatMoney(product.price, product.currency)} c/u</p>
-                      <div className="cart-line__actions">
-                        <div className="cart-qty">
-                          <button
-                            type="button"
-                            className="cart-qty__btn"
-                            aria-label="Disminuir"
-                            onClick={() => setQuantity(product.id, quantity - 1)}
-                          >
-                            −
-                          </button>
-                          <input
-                            className="cart-qty__input"
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            value={quantity}
-                            onChange={(e) => {
-                              const v = Number(e.target.value)
-                              if (!Number.isNaN(v)) setQuantity(product.id, v)
-                            }}
-                          />
-                          <button
-                            type="button"
-                            className="cart-qty__btn"
-                            aria-label="Aumentar"
-                            onClick={() => setQuantity(product.id, quantity + 1)}
-                          >
-                            +
+                {resolvedItems.map(({ product, quantity }) => {
+                  const id = lineKey(product.id, product.variantId)
+                  const variantLabel = [product.sizeCode, product.colorCode].filter(Boolean).join(' · ')
+                  return (
+                    <li key={id} className="cart-line">
+                      <div className="cart-line__media">
+                        <img src={product.imageUrl ?? fallbackImg()} alt="" width={88} height={110} loading="lazy" />
+                      </div>
+                      <div className="cart-line__info">
+                        <h3 className="cart-line__name">{product.name}</h3>
+                        {variantLabel ? <p className="cart-line__unit">{variantLabel}</p> : null}
+                        <p className="cart-line__unit">{formatMoney(product.price, product.currency)} c/u</p>
+                        <div className="cart-line__actions">
+                          <div className="cart-qty">
+                            <button
+                              type="button"
+                              className="cart-qty__btn"
+                              aria-label="Disminuir"
+                              onClick={() => setQuantity(id, quantity - 1)}
+                            >
+                              −
+                            </button>
+                            <input
+                              className="cart-qty__input"
+                              type="number"
+                              inputMode="numeric"
+                              min={1}
+                              value={quantity}
+                              onChange={(e) => {
+                                const v = Number(e.target.value)
+                                if (!Number.isNaN(v)) setQuantity(id, v)
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="cart-qty__btn"
+                              aria-label="Aumentar"
+                              onClick={() => setQuantity(id, quantity + 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button type="button" className="cart-line__remove" onClick={() => removeItem(id)}>
+                            Eliminar
                           </button>
                         </div>
-                        <button type="button" className="cart-line__remove" onClick={() => removeItem(product.id)}>
-                          Eliminar
-                        </button>
                       </div>
-                    </div>
-                    <p className="cart-line__subtotal">
-                      {formatMoney(product.price * quantity, product.currency)}
-                    </p>
-                  </li>
-                ))}
+                      <p className="cart-line__subtotal">
+                        {formatMoney(product.price * quantity, product.currency)}
+                      </p>
+                    </li>
+                  )
+                })}
               </ul>
             </section>
 
@@ -196,9 +265,9 @@ export function CartPage() {
                     }}
                   >
                     <option value="">Selecciona…</option>
-                    {SHIPPING_ZONES.map((d) => (
-                      <option key={d.name} value={d.name}>
-                        {d.name}
+                    {departments.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
                       </option>
                     ))}
                   </select>
@@ -213,7 +282,7 @@ export function CartPage() {
                   >
                     <option value="">{department ? 'Selecciona…' : 'Elige departamento'}</option>
                     {cities.map((c) => (
-                      <option key={c.name} value={c.name}>
+                      <option key={c.id} value={c.name}>
                         {c.name}
                       </option>
                     ))}
@@ -290,7 +359,7 @@ export function CartPage() {
               </div>
               {!shippingInfo.isFree && (
                 <p className="cart-invoice__hint">
-                  Envío gratis en compras desde {formatMoney(FREE_SHIPPING_THRESHOLD, cur)}.
+                  Envío gratis en compras desde {formatMoney(freeShippingThreshold, cur)}.
                 </p>
               )}
             </div>

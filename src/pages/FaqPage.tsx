@@ -1,28 +1,19 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import { contentApi, type FaqItem } from '../services/contentApi'
 import '../styles/faq.css'
-
-const FAQS = [
-  {
-    q: '¿Cuál es el tiempo de entrega?',
-    a: 'Para diseños de colección, entregamos en 3-5 días hábiles. Para pedidos personalizados, el tiempo oscila entre 7 y 10 días dependiendo de la complejidad y volumen.',
-  },
-  {
-    q: '¿Tienen pedido mínimo para personalizados?',
-    a: 'No. Creemos en la identidad individual. Puedes pedir desde una sola camiseta personalizada con la misma calidad que un pedido masivo.',
-  },
-  {
-    q: '¿Qué tipo de telas utilizan?',
-    a: 'Utilizamos algodón 100% premium de 240gsm (Heavyweight) para nuestras líneas de streetwear, garantizando durabilidad y confort superior.',
-  },
-  {
-    q: '¿Hacen envíos internacionales?',
-    a: 'Actualmente realizamos envíos a todo el territorio nacional. Estamos trabajando para habilitar envíos internacionales próximamente.',
-  },
-] as const
 
 export function FaqPage() {
   const baseId = useId()
   const [open, setOpen] = useState<number | null>(null)
+  const [faqs, setFaqs] = useState<FaqItem[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    contentApi
+      .faqs()
+      .then(setFaqs)
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error cargando FAQs'))
+  }, [])
 
   return (
     <div className="faq-page">
@@ -32,13 +23,15 @@ export function FaqPage() {
           <p>Todo lo que necesitas saber sobre T3SO.</p>
         </header>
 
+        {error ? <p className="state state--error">{error}</p> : null}
+
         <div className="faq-list" role="list">
-          {FAQS.map((item, i) => {
+          {faqs.map((item, i) => {
             const id = `${baseId}-panel-${i}`
             const triggerId = `${baseId}-trigger-${i}`
             const isOpen = open === i
             return (
-              <div key={item.q} className="faq-item" role="listitem">
+              <div key={item.id} className="faq-item" role="listitem">
                 <button
                   id={triggerId}
                   type="button"
@@ -47,14 +40,14 @@ export function FaqPage() {
                   aria-controls={id}
                   onClick={() => setOpen(isOpen ? null : i)}
                 >
-                  <span>{item.q}</span>
+                  <span>{item.question}</span>
                   <span className="faq-item__chevron" data-open={isOpen} aria-hidden="true">
                     ▼
                   </span>
                 </button>
                 {isOpen ? (
                   <div id={id} className="faq-item__panel" role="region" aria-labelledby={triggerId}>
-                    {item.a}
+                    {item.answer}
                   </div>
                 ) : null}
               </div>

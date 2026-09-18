@@ -31,4 +31,12 @@ export const catalogApi = {
     const qs = q.toString()
     return getJson<PagedResult<ProductDto>>(`/api/Catalog/products${qs ? `?${qs}` : ''}`)
   },
+  getProduct: (id: string) =>
+    USE_TEMPORARY_MOCK_CATALOG
+      ? mockCatalogApi.getProducts({}).then((r) => {
+          const found = r.items.find((p) => p.id === id)
+          if (!found) throw new Error('Producto no encontrado')
+          return found
+        })
+      : getJson<ProductDto>(`/api/Catalog/products/${id}`),
 }

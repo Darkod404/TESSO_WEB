@@ -54,6 +54,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000002',
@@ -68,6 +71,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000003',
@@ -82,6 +88,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000004',
@@ -96,6 +105,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000005',
@@ -110,6 +122,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000006',
@@ -124,6 +139,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_HOMBRE_ID,
     categoryName: 'Hombre',
     categorySlug: 'hombre',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000011',
@@ -138,6 +156,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000012',
@@ -152,6 +173,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000013',
@@ -166,6 +190,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000014',
@@ -180,6 +207,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000015',
@@ -194,6 +224,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
   {
     id: '20000000-0000-4000-8000-000000000016',
@@ -208,6 +241,9 @@ export const MOCK_PRODUCTS: ProductDto[] = [
     categoryId: CAT_MUJER_ID,
     categoryName: 'Mujer',
     categorySlug: 'mujer',
+    theme: null,
+    styleTag: null,
+    variants: [],
   },
 ]
 
@@ -227,6 +263,10 @@ export function resolveCartProductSnapshot(stored: CartProductSnapshot): CartPro
     price: live.price,
     currency: live.currency,
     imageUrl: live.imageUrl,
+    variantId: stored.variantId,
+    sku: stored.sku,
+    sizeCode: stored.sizeCode,
+    colorCode: stored.colorCode,
   }
 }
 
